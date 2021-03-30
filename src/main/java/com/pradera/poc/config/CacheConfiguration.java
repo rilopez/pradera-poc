@@ -48,6 +48,7 @@ public class CacheConfiguration {
             createCache(cm, com.pradera.poc.domain.User.class.getName());
             createCache(cm, com.pradera.poc.domain.Authority.class.getName());
             createCache(cm, com.pradera.poc.domain.User.class.getName() + ".authorities");
+            createCache(cm, com.pradera.poc.domain.Block.class.getName());
             // jhipster-needle-ehcache-add-entry
         };
     }

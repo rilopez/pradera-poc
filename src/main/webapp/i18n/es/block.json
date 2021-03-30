@@ -1,0 +1,28 @@
+{
+  "praderaApp": {
+    "block": {
+      "home": {
+        "title": "Blocks",
+        "createLabel": "Crear nuevo Block",
+        "createOrEditLabel": "Crear o editar Block",
+        "search": "Buscar Block",
+        "notFound": "Ningún Blocks encontrado"
+      },
+      "created": "Un nuevo Block ha sido creado con el identificador {{ param }}",
+      "updated": "Un Block ha sido actualizado con el identificador {{ param }}",
+      "deleted": "Un Block ha sido eliminado con el identificador {{ param }}",
+      "delete": {
+        "question": "¿Seguro que quiere eliminar Block {{ id }}?"
+      },
+      "detail": {
+        "title": "Block"
+      },
+      "type": "Type",
+      "content": "Content",
+      "createdDate": "Created Date",
+      "hash": "Hash",
+      "parent": "Parent",
+      "user": "User"
+    }
+  }
+}

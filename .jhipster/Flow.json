@@ -1,0 +1,45 @@
+{
+  "name": "Flow",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength"],
+      "fieldValidateRulesMinlength": "3"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "user",
+      "otherEntityRelationshipName": "flow",
+      "relationshipName": "user",
+      "otherEntityField": "login"
+    },
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "book",
+      "otherEntityRelationshipName": "flow",
+      "relationshipName": "book",
+      "otherEntityField": "title"
+    },
+    {
+      "relationshipType": "many-to-many",
+      "otherEntityName": "block",
+      "otherEntityRelationshipName": "flows",
+      "relationshipName": "blocks",
+      "otherEntityField": "content",
+      "ownerSide": true
+    }
+  ],
+  "entityTableName": "flow",
+  "dto": "mapstruct",
+  "pagination": "pagination",
+  "service": "serviceClass",
+  "jpaMetamodelFiltering": true,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "applications": ["pradera"],
+  "changelogDate": "20210330152308"
+}

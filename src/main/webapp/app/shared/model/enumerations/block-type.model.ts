@@ -1,4 +1,4 @@
-export const enum BlockType {
+export enum BlockType {
   TITLE = 'TITLE',
 
   PARAGRAPH = 'PARAGRAPH',

@@ -24,11 +24,11 @@ const createListener = (): Observable<any> =>
     listenerObserver = observer;
   });
 
-const sendActivity = () => {
-  connection.then(() => {
-    stompClient.send(
+export const sendActivity = (page: string) => {
+  connection?.then(() => {
+    stompClient?.send(
       '/topic/activity', // destination
-      JSON.stringify({ page: window.location.hash }), // body
+      JSON.stringify({ page }), // body
       {} // header
     );
   });
@@ -61,28 +61,23 @@ const connect = () => {
     url += '?access_token=' + authToken;
   }
   const socket = new SockJS(url);
-  stompClient = Stomp.over(socket);
+  stompClient = Stomp.over(socket, { protocols: ['v12.stomp'] });
 
   stompClient.connect(headers, () => {
     connectedPromise('success');
     connectedPromise = null;
-    subscribe();
-    sendActivity();
-    if (!alreadyConnectedOnce) {
-      window.onhashchange = () => {
-        sendActivity();
-      };
-      alreadyConnectedOnce = true;
-    }
+    sendActivity(window.location.pathname);
+    alreadyConnectedOnce = true;
   });
 };
 
 const disconnect = () => {
   if (stompClient !== null) {
-    stompClient.disconnect();
+    if (stompClient.connected) {
+      stompClient.disconnect();
+    }
     stompClient = null;
   }
-  window.onhashchange = () => {};
   alreadyConnectedOnce = false;
 };
 
@@ -98,7 +93,9 @@ const unsubscribe = () => {
 export default store => next => action => {
   if (action.type === SUCCESS(AUTH_ACTIONS.GET_SESSION)) {
     connect();
-    if (!alreadyConnectedOnce) {
+    const isAdmin = action.payload.data.authorities.includes('ROLE_ADMIN');
+    if (!alreadyConnectedOnce && isAdmin) {
+      subscribe();
       receive().subscribe(activity => {
         return store.dispatch({
           type: ADMIN_ACTIONS.WEBSOCKET_ACTIVITY_MESSAGE,
@@ -106,7 +103,7 @@ export default store => next => action => {
         });
       });
     }
-  } else if (action.type === FAILURE(AUTH_ACTIONS.GET_SESSION)) {
+  } else if (action.type === FAILURE(AUTH_ACTIONS.GET_SESSION) || action.type === AUTH_ACTIONS.LOGOUT) {
     unsubscribe();
     disconnect();
   }

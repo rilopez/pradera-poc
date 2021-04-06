@@ -3,13 +3,15 @@ import { connect } from 'react-redux';
 import { Link, RouteComponentProps } from 'react-router-dom';
 import { Button, Row, Col, Label } from 'reactstrap';
 import { AvFeedback, AvForm, AvGroup, AvInput, AvField } from 'availity-reactstrap-validation';
-import { Translate, translate, ICrudGetAction, ICrudGetAllAction, ICrudPutAction } from 'react-jhipster';
+import { Translate, translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
 
 import { getEntities as getBlocks } from 'app/entities/block/block.reducer';
 import { IUser } from 'app/shared/model/user.model';
 import { getUsers } from 'app/modules/administration/user-management/user-management.reducer';
+import { IFlow } from 'app/shared/model/flow.model';
+import { getEntities as getFlows } from 'app/entities/flow/flow.reducer';
 import { getEntity, updateEntity, createEntity, reset } from './block.reducer';
 import { IBlock } from 'app/shared/model/block.model';
 import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
@@ -18,11 +20,9 @@ import { mapIdList } from 'app/shared/util/entity-utils';
 export interface IBlockUpdateProps extends StateProps, DispatchProps, RouteComponentProps<{ id: string }> {}
 
 export const BlockUpdate = (props: IBlockUpdateProps) => {
-  const [parentId, setParentId] = useState('0');
-  const [userId, setUserId] = useState('0');
-  const [isNew, setIsNew] = useState(!props.match.params || !props.match.params.id);
+  const [isNew] = useState(!props.match.params || !props.match.params.id);
 
-  const { blockEntity, blocks, users, loading, updating } = props;
+  const { blockEntity, blocks, users, flows, loading, updating } = props;
 
   const handleClose = () => {
     props.history.push('/block' + props.location.search);
@@ -37,6 +37,7 @@ export const BlockUpdate = (props: IBlockUpdateProps) => {
 
     props.getBlocks();
     props.getUsers();
+    props.getFlows();
   }, []);
 
   useEffect(() => {
@@ -52,6 +53,8 @@ export const BlockUpdate = (props: IBlockUpdateProps) => {
       const entity = {
         ...blockEntity,
         ...values,
+        parent: blocks.find(it => it.id.toString() === values.parentId.toString()),
+        user: users.find(it => it.id.toString() === values.userId.toString()),
       };
 
       if (isNew) {
@@ -66,7 +69,7 @@ export const BlockUpdate = (props: IBlockUpdateProps) => {
     <div>
       <Row className="justify-content-center">
         <Col md="8">
-          <h2 id="praderaApp.block.home.createOrEditLabel">
+          <h2 id="praderaApp.block.home.createOrEditLabel" data-cy="BlockCreateUpdateHeading">
             <Translate contentKey="praderaApp.block.home.createOrEditLabel">Create or edit a Block</Translate>
           </h2>
         </Col>
@@ -89,7 +92,14 @@ export const BlockUpdate = (props: IBlockUpdateProps) => {
                 <Label id="typeLabel" for="block-type">
                   <Translate contentKey="praderaApp.block.type">Type</Translate>
                 </Label>
-                <AvInput id="block-type" type="select" className="form-control" name="type" value={(!isNew && blockEntity.type) || 'TITLE'}>
+                <AvInput
+                  id="block-type"
+                  data-cy="type"
+                  type="select"
+                  className="form-control"
+                  name="type"
+                  value={(!isNew && blockEntity.type) || 'TITLE'}
+                >
                   <option value="TITLE">{translate('praderaApp.BlockType.TITLE')}</option>
                   <option value="PARAGRAPH">{translate('praderaApp.BlockType.PARAGRAPH')}</option>
                   <option value="CHAPTER">{translate('praderaApp.BlockType.CHAPTER')}</option>
@@ -101,6 +111,7 @@ export const BlockUpdate = (props: IBlockUpdateProps) => {
                 </Label>
                 <AvField
                   id="block-content"
+                  data-cy="content"
                   type="text"
                   name="content"
                   validate={{
@@ -114,6 +125,7 @@ export const BlockUpdate = (props: IBlockUpdateProps) => {
                 </Label>
                 <AvInput
                   id="block-createdDate"
+                  data-cy="createdDate"
                   type="datetime-local"
                   className="form-control"
                   name="createdDate"
@@ -130,6 +142,7 @@ export const BlockUpdate = (props: IBlockUpdateProps) => {
                 </Label>
                 <AvField
                   id="block-hash"
+                  data-cy="hash"
                   type="text"
                   name="hash"
                   validate={{
@@ -141,7 +154,7 @@ export const BlockUpdate = (props: IBlockUpdateProps) => {
                 <Label for="block-parent">
                   <Translate contentKey="praderaApp.block.parent">Parent</Translate>
                 </Label>
-                <AvInput id="block-parent" type="select" className="form-control" name="parentId">
+                <AvInput id="block-parent" data-cy="parent" type="select" className="form-control" name="parentId">
                   <option value="" key="0" />
                   {blocks
                     ? blocks.map(otherEntity => (
@@ -156,7 +169,8 @@ export const BlockUpdate = (props: IBlockUpdateProps) => {
                 <Label for="block-user">
                   <Translate contentKey="praderaApp.block.user">User</Translate>
                 </Label>
-                <AvInput id="block-user" type="select" className="form-control" name="userId" required>
+                <AvInput id="block-user" data-cy="user" type="select" className="form-control" name="userId" required>
+                  <option value="" key="0" />
                   {users
                     ? users.map(otherEntity => (
                         <option value={otherEntity.id} key={otherEntity.id}>
@@ -177,7 +191,7 @@ export const BlockUpdate = (props: IBlockUpdateProps) => {
                 </span>
               </Button>
               &nbsp;
-              <Button color="primary" id="save-entity" type="submit" disabled={updating}>
+              <Button color="primary" id="save-entity" data-cy="entityCreateSaveButton" type="submit" disabled={updating}>
                 <FontAwesomeIcon icon="save" />
                 &nbsp;
                 <Translate contentKey="entity.action.save">Save</Translate>
@@ -193,6 +207,7 @@ export const BlockUpdate = (props: IBlockUpdateProps) => {
 const mapStateToProps = (storeState: IRootState) => ({
   blocks: storeState.block.entities,
   users: storeState.userManagement.users,
+  flows: storeState.flow.entities,
   blockEntity: storeState.block.entity,
   loading: storeState.block.loading,
   updating: storeState.block.updating,
@@ -202,6 +217,7 @@ const mapStateToProps = (storeState: IRootState) => ({
 const mapDispatchToProps = {
   getBlocks,
   getUsers,
+  getFlows,
   getEntity,
   updateEntity,
   createEntity,

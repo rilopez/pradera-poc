@@ -1,4 +1,6 @@
-import { Moment } from 'moment';
+import dayjs from 'dayjs';
+import { IUser } from 'app/shared/model/user.model';
+import { IFlow } from 'app/shared/model/flow.model';
 import { BlockType } from 'app/shared/model/enumerations/block-type.model';
 
 export interface IBlock {
@@ -7,10 +9,9 @@ export interface IBlock {
   content?: string;
   createdDate?: string;
   hash?: string;
-  parentContent?: string;
-  parentId?: number;
-  userLogin?: string;
-  userId?: number;
+  parent?: IBlock | null;
+  user?: IUser;
+  flows?: IFlow[] | null;
 }
 
 export const defaultValue: Readonly<IBlock> = {};

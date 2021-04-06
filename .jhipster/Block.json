@@ -1,24 +1,5 @@
 {
-  "fluentMethods": true,
-  "clientRootFolder": "",
-  "relationships": [
-    {
-      "relationshipName": "parent",
-      "otherEntityName": "block",
-      "relationshipType": "many-to-one",
-      "otherEntityField": "content",
-      "otherEntityRelationshipName": "block"
-    },
-    {
-      "relationshipName": "user",
-      "otherEntityName": "user",
-      "relationshipType": "many-to-one",
-      "relationshipValidateRules": ["required"],
-      "otherEntityField": "login",
-      "ownerSide": true,
-      "otherEntityRelationshipName": "block"
-    }
-  ],
+  "name": "Block",
   "fields": [
     {
       "fieldName": "type",
@@ -42,13 +23,39 @@
       "fieldValidateRules": ["required"]
     }
   ],
-  "changelogDate": "20210330154251",
-  "dto": "mapstruct",
-  "searchEngine": "elasticsearch",
-  "service": "serviceClass",
+  "relationships": [
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "block",
+      "otherEntityRelationshipName": "block",
+      "relationshipName": "parent",
+      "otherEntityField": "content"
+    },
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "user",
+      "otherEntityRelationshipName": "block",
+      "relationshipValidateRules": "required",
+      "relationshipName": "user",
+      "otherEntityField": "login"
+    },
+    {
+      "relationshipType": "many-to-many",
+      "otherEntityName": "flow",
+      "otherEntityRelationshipName": "blocks",
+      "relationshipName": "flows",
+      "otherEntityField": "name",
+      "ownerSide": false
+    }
+  ],
   "entityTableName": "block",
-  "databaseType": "sql",
-  "readOnly": false,
+  "dto": "mapstruct",
+  "pagination": "pagination",
+  "service": "serviceClass",
   "jpaMetamodelFiltering": true,
-  "pagination": "pagination"
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "applications": ["pradera"],
+  "changelogDate": "20210330152208"
 }

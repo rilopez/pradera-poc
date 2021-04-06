@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ICrudSearchAction, ICrudGetAction, ICrudGetAllAction, ICrudPutAction, ICrudDeleteAction } from 'react-jhipster';
+import { ICrudGetAction, ICrudGetAllAction, ICrudPutAction, ICrudDeleteAction } from 'react-jhipster';
 
 import { cleanEntity } from 'app/shared/util/entity-utils';
 import { REQUEST, SUCCESS, FAILURE } from 'app/shared/reducers/action-type.util';
@@ -7,11 +7,11 @@ import { REQUEST, SUCCESS, FAILURE } from 'app/shared/reducers/action-type.util'
 import { IBlock, defaultValue } from 'app/shared/model/block.model';
 
 export const ACTION_TYPES = {
-  SEARCH_BLOCKS: 'block/SEARCH_BLOCKS',
   FETCH_BLOCK_LIST: 'block/FETCH_BLOCK_LIST',
   FETCH_BLOCK: 'block/FETCH_BLOCK',
   CREATE_BLOCK: 'block/CREATE_BLOCK',
   UPDATE_BLOCK: 'block/UPDATE_BLOCK',
+  PARTIAL_UPDATE_BLOCK: 'block/PARTIAL_UPDATE_BLOCK',
   DELETE_BLOCK: 'block/DELETE_BLOCK',
   RESET: 'block/RESET',
 };
@@ -32,7 +32,6 @@ export type BlockState = Readonly<typeof initialState>;
 
 export default (state: BlockState = initialState, action): BlockState => {
   switch (action.type) {
-    case REQUEST(ACTION_TYPES.SEARCH_BLOCKS):
     case REQUEST(ACTION_TYPES.FETCH_BLOCK_LIST):
     case REQUEST(ACTION_TYPES.FETCH_BLOCK):
       return {
@@ -44,17 +43,18 @@ export default (state: BlockState = initialState, action): BlockState => {
     case REQUEST(ACTION_TYPES.CREATE_BLOCK):
     case REQUEST(ACTION_TYPES.UPDATE_BLOCK):
     case REQUEST(ACTION_TYPES.DELETE_BLOCK):
+    case REQUEST(ACTION_TYPES.PARTIAL_UPDATE_BLOCK):
       return {
         ...state,
         errorMessage: null,
         updateSuccess: false,
         updating: true,
       };
-    case FAILURE(ACTION_TYPES.SEARCH_BLOCKS):
     case FAILURE(ACTION_TYPES.FETCH_BLOCK_LIST):
     case FAILURE(ACTION_TYPES.FETCH_BLOCK):
     case FAILURE(ACTION_TYPES.CREATE_BLOCK):
     case FAILURE(ACTION_TYPES.UPDATE_BLOCK):
+    case FAILURE(ACTION_TYPES.PARTIAL_UPDATE_BLOCK):
     case FAILURE(ACTION_TYPES.DELETE_BLOCK):
       return {
         ...state,
@@ -63,7 +63,6 @@ export default (state: BlockState = initialState, action): BlockState => {
         updateSuccess: false,
         errorMessage: action.payload,
       };
-    case SUCCESS(ACTION_TYPES.SEARCH_BLOCKS):
     case SUCCESS(ACTION_TYPES.FETCH_BLOCK_LIST):
       return {
         ...state,
@@ -79,6 +78,7 @@ export default (state: BlockState = initialState, action): BlockState => {
       };
     case SUCCESS(ACTION_TYPES.CREATE_BLOCK):
     case SUCCESS(ACTION_TYPES.UPDATE_BLOCK):
+    case SUCCESS(ACTION_TYPES.PARTIAL_UPDATE_BLOCK):
       return {
         ...state,
         updating: false,
@@ -102,14 +102,8 @@ export default (state: BlockState = initialState, action): BlockState => {
 };
 
 const apiUrl = 'api/blocks';
-const apiSearchUrl = 'api/_search/blocks';
 
 // Actions
-
-export const getSearchEntities: ICrudSearchAction<IBlock> = (query, page, size, sort) => ({
-  type: ACTION_TYPES.SEARCH_BLOCKS,
-  payload: axios.get<IBlock>(`${apiSearchUrl}?query=${query}${sort ? `&page=${page}&size=${size}&sort=${sort}` : ''}`),
-});
 
 export const getEntities: ICrudGetAllAction<IBlock> = (page, size, sort) => {
   const requestUrl = `${apiUrl}${sort ? `?page=${page}&size=${size}&sort=${sort}` : ''}`;
@@ -139,7 +133,15 @@ export const createEntity: ICrudPutAction<IBlock> = entity => async dispatch => 
 export const updateEntity: ICrudPutAction<IBlock> = entity => async dispatch => {
   const result = await dispatch({
     type: ACTION_TYPES.UPDATE_BLOCK,
-    payload: axios.put(apiUrl, cleanEntity(entity)),
+    payload: axios.put(`${apiUrl}/${entity.id}`, cleanEntity(entity)),
+  });
+  return result;
+};
+
+export const partialUpdate: ICrudPutAction<IBlock> = entity => async dispatch => {
+  const result = await dispatch({
+    type: ACTION_TYPES.PARTIAL_UPDATE_BLOCK,
+    payload: axios.patch(`${apiUrl}/${entity.id}`, cleanEntity(entity)),
   });
   return result;
 };

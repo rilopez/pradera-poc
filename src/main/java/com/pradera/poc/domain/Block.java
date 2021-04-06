@@ -1,17 +1,15 @@
 package com.pradera.poc.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
-import javax.persistence.*;
-import javax.validation.constraints.*;
-
-import org.springframework.data.elasticsearch.annotations.FieldType;
+import com.pradera.poc.domain.enumeration.BlockType;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
-
-import com.pradera.poc.domain.enumeration.BlockType;
+import java.util.HashSet;
+import java.util.Set;
+import javax.persistence.*;
+import javax.validation.constraints.*;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
  * A Block.
@@ -19,7 +17,6 @@ import com.pradera.poc.domain.enumeration.BlockType;
 @Entity
 @Table(name = "block")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "block")
 public class Block implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -47,13 +44,17 @@ public class Block implements Serializable {
     private String hash;
 
     @ManyToOne
-    @JsonIgnoreProperties(value = "blocks", allowSetters = true)
+    @JsonIgnoreProperties(value = { "parent", "user", "flows" }, allowSetters = true)
     private Block parent;
 
     @ManyToOne(optional = false)
     @NotNull
-    @JsonIgnoreProperties(value = "blocks", allowSetters = true)
     private User user;
+
+    @ManyToMany(mappedBy = "blocks")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "user", "book", "blocks" }, allowSetters = true)
+    private Set<Flow> flows = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
     public Long getId() {
@@ -64,8 +65,13 @@ public class Block implements Serializable {
         this.id = id;
     }
 
+    public Block id(Long id) {
+        this.id = id;
+        return this;
+    }
+
     public BlockType getType() {
-        return type;
+        return this.type;
     }
 
     public Block type(BlockType type) {
@@ -78,7 +84,7 @@ public class Block implements Serializable {
     }
 
     public String getContent() {
-        return content;
+        return this.content;
     }
 
     public Block content(String content) {
@@ -91,7 +97,7 @@ public class Block implements Serializable {
     }
 
     public ZonedDateTime getCreatedDate() {
-        return createdDate;
+        return this.createdDate;
     }
 
     public Block createdDate(ZonedDateTime createdDate) {
@@ -104,7 +110,7 @@ public class Block implements Serializable {
     }
 
     public String getHash() {
-        return hash;
+        return this.hash;
     }
 
     public Block hash(String hash) {
@@ -117,11 +123,11 @@ public class Block implements Serializable {
     }
 
     public Block getParent() {
-        return parent;
+        return this.parent;
     }
 
     public Block parent(Block block) {
-        this.parent = block;
+        this.setParent(block);
         return this;
     }
 
@@ -130,17 +136,49 @@ public class Block implements Serializable {
     }
 
     public User getUser() {
-        return user;
+        return this.user;
     }
 
     public Block user(User user) {
-        this.user = user;
+        this.setUser(user);
         return this;
     }
 
     public void setUser(User user) {
         this.user = user;
     }
+
+    public Set<Flow> getFlows() {
+        return this.flows;
+    }
+
+    public Block flows(Set<Flow> flows) {
+        this.setFlows(flows);
+        return this;
+    }
+
+    public Block addFlows(Flow flow) {
+        this.flows.add(flow);
+        flow.getBlocks().add(this);
+        return this;
+    }
+
+    public Block removeFlows(Flow flow) {
+        this.flows.remove(flow);
+        flow.getBlocks().remove(this);
+        return this;
+    }
+
+    public void setFlows(Set<Flow> flows) {
+        if (this.flows != null) {
+            this.flows.forEach(i -> i.removeBlocks(this));
+        }
+        if (flows != null) {
+            flows.forEach(i -> i.addBlocks(this));
+        }
+        this.flows = flows;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -156,7 +194,8 @@ public class Block implements Serializable {
 
     @Override
     public int hashCode() {
-        return 31;
+        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        return getClass().hashCode();
     }
 
     // prettier-ignore

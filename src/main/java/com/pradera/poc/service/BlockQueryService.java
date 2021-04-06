@@ -1,9 +1,13 @@
 package com.pradera.poc.service;
 
+import com.pradera.poc.domain.*; // for static metamodels
+import com.pradera.poc.domain.Block;
+import com.pradera.poc.repository.BlockRepository;
+import com.pradera.poc.service.criteria.BlockCriteria;
+import com.pradera.poc.service.dto.BlockDTO;
+import com.pradera.poc.service.mapper.BlockMapper;
 import java.util.List;
-
 import javax.persistence.criteria.JoinType;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -11,16 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import io.github.jhipster.service.QueryService;
-
-import com.pradera.poc.domain.Block;
-import com.pradera.poc.domain.*; // for static metamodels
-import com.pradera.poc.repository.BlockRepository;
-import com.pradera.poc.repository.search.BlockSearchRepository;
-import com.pradera.poc.service.dto.BlockCriteria;
-import com.pradera.poc.service.dto.BlockDTO;
-import com.pradera.poc.service.mapper.BlockMapper;
+import tech.jhipster.service.QueryService;
 
 /**
  * Service for executing complex queries for {@link Block} entities in the database.
@@ -38,12 +33,9 @@ public class BlockQueryService extends QueryService<Block> {
 
     private final BlockMapper blockMapper;
 
-    private final BlockSearchRepository blockSearchRepository;
-
-    public BlockQueryService(BlockRepository blockRepository, BlockMapper blockMapper, BlockSearchRepository blockSearchRepository) {
+    public BlockQueryService(BlockRepository blockRepository, BlockMapper blockMapper) {
         this.blockRepository = blockRepository;
         this.blockMapper = blockMapper;
-        this.blockSearchRepository = blockSearchRepository;
     }
 
     /**
@@ -68,8 +60,7 @@ public class BlockQueryService extends QueryService<Block> {
     public Page<BlockDTO> findByCriteria(BlockCriteria criteria, Pageable page) {
         log.debug("find by criteria : {}, page: {}", criteria, page);
         final Specification<Block> specification = createSpecification(criteria);
-        return blockRepository.findAll(specification, page)
-            .map(blockMapper::toDto);
+        return blockRepository.findAll(specification, page).map(blockMapper::toDto);
     }
 
     /**
@@ -108,12 +99,22 @@ public class BlockQueryService extends QueryService<Block> {
                 specification = specification.and(buildStringSpecification(criteria.getHash(), Block_.hash));
             }
             if (criteria.getParentId() != null) {
-                specification = specification.and(buildSpecification(criteria.getParentId(),
-                    root -> root.join(Block_.parent, JoinType.LEFT).get(Block_.id)));
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getParentId(), root -> root.join(Block_.parent, JoinType.LEFT).get(Block_.id))
+                    );
             }
             if (criteria.getUserId() != null) {
-                specification = specification.and(buildSpecification(criteria.getUserId(),
-                    root -> root.join(Block_.user, JoinType.LEFT).get(User_.id)));
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getUserId(), root -> root.join(Block_.user, JoinType.LEFT).get(User_.id))
+                    );
+            }
+            if (criteria.getFlowsId() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getFlowsId(), root -> root.join(Block_.flows, JoinType.LEFT).get(Flow_.id))
+                    );
             }
         }
         return specification;

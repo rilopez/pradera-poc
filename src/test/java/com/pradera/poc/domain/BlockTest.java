@@ -1,13 +1,14 @@
 package com.pradera.poc.domain;
 
-import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
-import com.pradera.poc.web.rest.TestUtil;
 
-public class BlockTest {
+import com.pradera.poc.web.rest.TestUtil;
+import org.junit.jupiter.api.Test;
+
+class BlockTest {
 
     @Test
-    public void equalsVerifier() throws Exception {
+    void equalsVerifier() throws Exception {
         TestUtil.equalsVerifier(Block.class);
         Block block1 = new Block();
         block1.setId(1L);

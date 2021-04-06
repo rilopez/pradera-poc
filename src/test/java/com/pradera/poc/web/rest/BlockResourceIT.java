@@ -1,56 +1,45 @@
 package com.pradera.poc.web.rest;
 
-import com.pradera.poc.PraderaApp;
+import static com.pradera.poc.web.rest.TestUtil.sameInstant;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import com.pradera.poc.IntegrationTest;
 import com.pradera.poc.domain.Block;
 import com.pradera.poc.domain.Block;
+import com.pradera.poc.domain.Flow;
 import com.pradera.poc.domain.User;
+import com.pradera.poc.domain.enumeration.BlockType;
 import com.pradera.poc.repository.BlockRepository;
-import com.pradera.poc.repository.search.BlockSearchRepository;
-import com.pradera.poc.service.BlockService;
+import com.pradera.poc.service.criteria.BlockCriteria;
 import com.pradera.poc.service.dto.BlockDTO;
 import com.pradera.poc.service.mapper.BlockMapper;
-import com.pradera.poc.service.dto.BlockCriteria;
-import com.pradera.poc.service.BlockQueryService;
-
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
+import javax.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import javax.persistence.EntityManager;
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.time.ZoneOffset;
-import java.time.ZoneId;
-import java.util.Collections;
-import java.util.List;
 
-import static com.pradera.poc.web.rest.TestUtil.sameInstant;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
-import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import com.pradera.poc.domain.enumeration.BlockType;
 /**
  * Integration tests for the {@link BlockResource} REST controller.
  */
-@SpringBootTest(classes = PraderaApp.class)
-@ExtendWith(MockitoExtension.class)
+@IntegrationTest
 @AutoConfigureMockMvc
 @WithMockUser
-public class BlockResourceIT {
+class BlockResourceIT {
 
     private static final BlockType DEFAULT_TYPE = BlockType.TITLE;
     private static final BlockType UPDATED_TYPE = BlockType.PARAGRAPH;
@@ -65,25 +54,17 @@ public class BlockResourceIT {
     private static final String DEFAULT_HASH = "AAAAAAAAAA";
     private static final String UPDATED_HASH = "BBBBBBBBBB";
 
+    private static final String ENTITY_API_URL = "/api/blocks";
+    private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
+
+    private static Random random = new Random();
+    private static AtomicLong count = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
+
     @Autowired
     private BlockRepository blockRepository;
 
     @Autowired
     private BlockMapper blockMapper;
-
-    @Autowired
-    private BlockService blockService;
-
-    /**
-     * This repository is mocked in the com.pradera.poc.repository.search test package.
-     *
-     * @see com.pradera.poc.repository.search.BlockSearchRepositoryMockConfiguration
-     */
-    @Autowired
-    private BlockSearchRepository mockBlockSearchRepository;
-
-    @Autowired
-    private BlockQueryService blockQueryService;
 
     @Autowired
     private EntityManager em;
@@ -100,11 +81,7 @@ public class BlockResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Block createEntity(EntityManager em) {
-        Block block = new Block()
-            .type(DEFAULT_TYPE)
-            .content(DEFAULT_CONTENT)
-            .createdDate(DEFAULT_CREATED_DATE)
-            .hash(DEFAULT_HASH);
+        Block block = new Block().type(DEFAULT_TYPE).content(DEFAULT_CONTENT).createdDate(DEFAULT_CREATED_DATE).hash(DEFAULT_HASH);
         // Add required entity
         User user = UserResourceIT.createEntity(em);
         em.persist(user);
@@ -112,6 +89,7 @@ public class BlockResourceIT {
         block.setUser(user);
         return block;
     }
+
     /**
      * Create an updated entity for this test.
      *
@@ -119,11 +97,7 @@ public class BlockResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Block createUpdatedEntity(EntityManager em) {
-        Block block = new Block()
-            .type(UPDATED_TYPE)
-            .content(UPDATED_CONTENT)
-            .createdDate(UPDATED_CREATED_DATE)
-            .hash(UPDATED_HASH);
+        Block block = new Block().type(UPDATED_TYPE).content(UPDATED_CONTENT).createdDate(UPDATED_CREATED_DATE).hash(UPDATED_HASH);
         // Add required entity
         User user = UserResourceIT.createEntity(em);
         em.persist(user);
@@ -139,13 +113,12 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void createBlock() throws Exception {
+    void createBlock() throws Exception {
         int databaseSizeBeforeCreate = blockRepository.findAll().size();
         // Create the Block
         BlockDTO blockDTO = blockMapper.toDto(block);
-        restBlockMockMvc.perform(post("/api/blocks")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(blockDTO)))
+        restBlockMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(blockDTO)))
             .andExpect(status().isCreated());
 
         // Validate the Block in the database
@@ -156,38 +129,30 @@ public class BlockResourceIT {
         assertThat(testBlock.getContent()).isEqualTo(DEFAULT_CONTENT);
         assertThat(testBlock.getCreatedDate()).isEqualTo(DEFAULT_CREATED_DATE);
         assertThat(testBlock.getHash()).isEqualTo(DEFAULT_HASH);
-
-        // Validate the Block in Elasticsearch
-        verify(mockBlockSearchRepository, times(1)).save(testBlock);
     }
 
     @Test
     @Transactional
-    public void createBlockWithExistingId() throws Exception {
-        int databaseSizeBeforeCreate = blockRepository.findAll().size();
-
+    void createBlockWithExistingId() throws Exception {
         // Create the Block with an existing ID
         block.setId(1L);
         BlockDTO blockDTO = blockMapper.toDto(block);
 
+        int databaseSizeBeforeCreate = blockRepository.findAll().size();
+
         // An entity with an existing ID cannot be created, so this API call must fail
-        restBlockMockMvc.perform(post("/api/blocks")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(blockDTO)))
+        restBlockMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(blockDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Block in the database
         List<Block> blockList = blockRepository.findAll();
         assertThat(blockList).hasSize(databaseSizeBeforeCreate);
-
-        // Validate the Block in Elasticsearch
-        verify(mockBlockSearchRepository, times(0)).save(block);
     }
-
 
     @Test
     @Transactional
-    public void checkTypeIsRequired() throws Exception {
+    void checkTypeIsRequired() throws Exception {
         int databaseSizeBeforeTest = blockRepository.findAll().size();
         // set the field null
         block.setType(null);
@@ -195,10 +160,8 @@ public class BlockResourceIT {
         // Create the Block, which fails.
         BlockDTO blockDTO = blockMapper.toDto(block);
 
-
-        restBlockMockMvc.perform(post("/api/blocks")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(blockDTO)))
+        restBlockMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(blockDTO)))
             .andExpect(status().isBadRequest());
 
         List<Block> blockList = blockRepository.findAll();
@@ -207,7 +170,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void checkContentIsRequired() throws Exception {
+    void checkContentIsRequired() throws Exception {
         int databaseSizeBeforeTest = blockRepository.findAll().size();
         // set the field null
         block.setContent(null);
@@ -215,10 +178,8 @@ public class BlockResourceIT {
         // Create the Block, which fails.
         BlockDTO blockDTO = blockMapper.toDto(block);
 
-
-        restBlockMockMvc.perform(post("/api/blocks")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(blockDTO)))
+        restBlockMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(blockDTO)))
             .andExpect(status().isBadRequest());
 
         List<Block> blockList = blockRepository.findAll();
@@ -227,7 +188,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void checkCreatedDateIsRequired() throws Exception {
+    void checkCreatedDateIsRequired() throws Exception {
         int databaseSizeBeforeTest = blockRepository.findAll().size();
         // set the field null
         block.setCreatedDate(null);
@@ -235,10 +196,8 @@ public class BlockResourceIT {
         // Create the Block, which fails.
         BlockDTO blockDTO = blockMapper.toDto(block);
 
-
-        restBlockMockMvc.perform(post("/api/blocks")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(blockDTO)))
+        restBlockMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(blockDTO)))
             .andExpect(status().isBadRequest());
 
         List<Block> blockList = blockRepository.findAll();
@@ -247,7 +206,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void checkHashIsRequired() throws Exception {
+    void checkHashIsRequired() throws Exception {
         int databaseSizeBeforeTest = blockRepository.findAll().size();
         // set the field null
         block.setHash(null);
@@ -255,10 +214,8 @@ public class BlockResourceIT {
         // Create the Block, which fails.
         BlockDTO blockDTO = blockMapper.toDto(block);
 
-
-        restBlockMockMvc.perform(post("/api/blocks")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(blockDTO)))
+        restBlockMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(blockDTO)))
             .andExpect(status().isBadRequest());
 
         List<Block> blockList = blockRepository.findAll();
@@ -267,12 +224,13 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocks() throws Exception {
+    void getAllBlocks() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
         // Get all the blockList
-        restBlockMockMvc.perform(get("/api/blocks?sort=id,desc"))
+        restBlockMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(block.getId().intValue())))
@@ -281,15 +239,16 @@ public class BlockResourceIT {
             .andExpect(jsonPath("$.[*].createdDate").value(hasItem(sameInstant(DEFAULT_CREATED_DATE))))
             .andExpect(jsonPath("$.[*].hash").value(hasItem(DEFAULT_HASH)));
     }
-    
+
     @Test
     @Transactional
-    public void getBlock() throws Exception {
+    void getBlock() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
         // Get the block
-        restBlockMockMvc.perform(get("/api/blocks/{id}", block.getId()))
+        restBlockMockMvc
+            .perform(get(ENTITY_API_URL_ID, block.getId()))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(block.getId().intValue()))
@@ -299,10 +258,9 @@ public class BlockResourceIT {
             .andExpect(jsonPath("$.hash").value(DEFAULT_HASH));
     }
 
-
     @Test
     @Transactional
-    public void getBlocksByIdFiltering() throws Exception {
+    void getBlocksByIdFiltering() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -318,10 +276,9 @@ public class BlockResourceIT {
         defaultBlockShouldNotBeFound("id.lessThan=" + id);
     }
 
-
     @Test
     @Transactional
-    public void getAllBlocksByTypeIsEqualToSomething() throws Exception {
+    void getAllBlocksByTypeIsEqualToSomething() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -334,7 +291,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByTypeIsNotEqualToSomething() throws Exception {
+    void getAllBlocksByTypeIsNotEqualToSomething() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -347,7 +304,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByTypeIsInShouldWork() throws Exception {
+    void getAllBlocksByTypeIsInShouldWork() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -360,7 +317,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByTypeIsNullOrNotNull() throws Exception {
+    void getAllBlocksByTypeIsNullOrNotNull() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -373,7 +330,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByContentIsEqualToSomething() throws Exception {
+    void getAllBlocksByContentIsEqualToSomething() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -386,7 +343,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByContentIsNotEqualToSomething() throws Exception {
+    void getAllBlocksByContentIsNotEqualToSomething() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -399,7 +356,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByContentIsInShouldWork() throws Exception {
+    void getAllBlocksByContentIsInShouldWork() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -412,7 +369,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByContentIsNullOrNotNull() throws Exception {
+    void getAllBlocksByContentIsNullOrNotNull() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -422,9 +379,10 @@ public class BlockResourceIT {
         // Get all the blockList where content is null
         defaultBlockShouldNotBeFound("content.specified=false");
     }
-                @Test
+
+    @Test
     @Transactional
-    public void getAllBlocksByContentContainsSomething() throws Exception {
+    void getAllBlocksByContentContainsSomething() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -437,7 +395,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByContentNotContainsSomething() throws Exception {
+    void getAllBlocksByContentNotContainsSomething() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -448,10 +406,9 @@ public class BlockResourceIT {
         defaultBlockShouldBeFound("content.doesNotContain=" + UPDATED_CONTENT);
     }
 
-
     @Test
     @Transactional
-    public void getAllBlocksByCreatedDateIsEqualToSomething() throws Exception {
+    void getAllBlocksByCreatedDateIsEqualToSomething() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -464,7 +421,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByCreatedDateIsNotEqualToSomething() throws Exception {
+    void getAllBlocksByCreatedDateIsNotEqualToSomething() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -477,7 +434,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByCreatedDateIsInShouldWork() throws Exception {
+    void getAllBlocksByCreatedDateIsInShouldWork() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -490,7 +447,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByCreatedDateIsNullOrNotNull() throws Exception {
+    void getAllBlocksByCreatedDateIsNullOrNotNull() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -503,7 +460,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByCreatedDateIsGreaterThanOrEqualToSomething() throws Exception {
+    void getAllBlocksByCreatedDateIsGreaterThanOrEqualToSomething() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -516,7 +473,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByCreatedDateIsLessThanOrEqualToSomething() throws Exception {
+    void getAllBlocksByCreatedDateIsLessThanOrEqualToSomething() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -529,7 +486,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByCreatedDateIsLessThanSomething() throws Exception {
+    void getAllBlocksByCreatedDateIsLessThanSomething() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -542,7 +499,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByCreatedDateIsGreaterThanSomething() throws Exception {
+    void getAllBlocksByCreatedDateIsGreaterThanSomething() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -553,10 +510,9 @@ public class BlockResourceIT {
         defaultBlockShouldBeFound("createdDate.greaterThan=" + SMALLER_CREATED_DATE);
     }
 
-
     @Test
     @Transactional
-    public void getAllBlocksByHashIsEqualToSomething() throws Exception {
+    void getAllBlocksByHashIsEqualToSomething() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -569,7 +525,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByHashIsNotEqualToSomething() throws Exception {
+    void getAllBlocksByHashIsNotEqualToSomething() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -582,7 +538,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByHashIsInShouldWork() throws Exception {
+    void getAllBlocksByHashIsInShouldWork() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -595,7 +551,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByHashIsNullOrNotNull() throws Exception {
+    void getAllBlocksByHashIsNullOrNotNull() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -605,9 +561,10 @@ public class BlockResourceIT {
         // Get all the blockList where hash is null
         defaultBlockShouldNotBeFound("hash.specified=false");
     }
-                @Test
+
+    @Test
     @Transactional
-    public void getAllBlocksByHashContainsSomething() throws Exception {
+    void getAllBlocksByHashContainsSomething() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -620,7 +577,7 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getAllBlocksByHashNotContainsSomething() throws Exception {
+    void getAllBlocksByHashNotContainsSomething() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -631,10 +588,9 @@ public class BlockResourceIT {
         defaultBlockShouldBeFound("hash.doesNotContain=" + UPDATED_HASH);
     }
 
-
     @Test
     @Transactional
-    public void getAllBlocksByParentIsEqualToSomething() throws Exception {
+    void getAllBlocksByParentIsEqualToSomething() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
         Block parent = BlockResourceIT.createEntity(em);
@@ -647,31 +603,54 @@ public class BlockResourceIT {
         // Get all the blockList where parent equals to parentId
         defaultBlockShouldBeFound("parentId.equals=" + parentId);
 
-        // Get all the blockList where parent equals to parentId + 1
+        // Get all the blockList where parent equals to (parentId + 1)
         defaultBlockShouldNotBeFound("parentId.equals=" + (parentId + 1));
     }
 
-
     @Test
     @Transactional
-    public void getAllBlocksByUserIsEqualToSomething() throws Exception {
-        // Get already existing entity
-        User user = block.getUser();
+    void getAllBlocksByUserIsEqualToSomething() throws Exception {
+        // Initialize the database
+        blockRepository.saveAndFlush(block);
+        User user = UserResourceIT.createEntity(em);
+        em.persist(user);
+        em.flush();
+        block.setUser(user);
         blockRepository.saveAndFlush(block);
         Long userId = user.getId();
 
         // Get all the blockList where user equals to userId
         defaultBlockShouldBeFound("userId.equals=" + userId);
 
-        // Get all the blockList where user equals to userId + 1
+        // Get all the blockList where user equals to (userId + 1)
         defaultBlockShouldNotBeFound("userId.equals=" + (userId + 1));
+    }
+
+    @Test
+    @Transactional
+    void getAllBlocksByFlowsIsEqualToSomething() throws Exception {
+        // Initialize the database
+        blockRepository.saveAndFlush(block);
+        Flow flows = FlowResourceIT.createEntity(em);
+        em.persist(flows);
+        em.flush();
+        block.addFlows(flows);
+        blockRepository.saveAndFlush(block);
+        Long flowsId = flows.getId();
+
+        // Get all the blockList where flows equals to flowsId
+        defaultBlockShouldBeFound("flowsId.equals=" + flowsId);
+
+        // Get all the blockList where flows equals to (flowsId + 1)
+        defaultBlockShouldNotBeFound("flowsId.equals=" + (flowsId + 1));
     }
 
     /**
      * Executes the search, and checks that the default entity is returned.
      */
     private void defaultBlockShouldBeFound(String filter) throws Exception {
-        restBlockMockMvc.perform(get("/api/blocks?sort=id,desc&" + filter))
+        restBlockMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc&" + filter))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(block.getId().intValue())))
@@ -681,7 +660,8 @@ public class BlockResourceIT {
             .andExpect(jsonPath("$.[*].hash").value(hasItem(DEFAULT_HASH)));
 
         // Check, that the count call also returns 1
-        restBlockMockMvc.perform(get("/api/blocks/count?sort=id,desc&" + filter))
+        restBlockMockMvc
+            .perform(get(ENTITY_API_URL + "/count?sort=id,desc&" + filter))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(content().string("1"));
@@ -691,14 +671,16 @@ public class BlockResourceIT {
      * Executes the search, and checks that the default entity is not returned.
      */
     private void defaultBlockShouldNotBeFound(String filter) throws Exception {
-        restBlockMockMvc.perform(get("/api/blocks?sort=id,desc&" + filter))
+        restBlockMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc&" + filter))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$").isArray())
             .andExpect(jsonPath("$").isEmpty());
 
         // Check, that the count call also returns 0
-        restBlockMockMvc.perform(get("/api/blocks/count?sort=id,desc&" + filter))
+        restBlockMockMvc
+            .perform(get(ENTITY_API_URL + "/count?sort=id,desc&" + filter))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(content().string("0"));
@@ -706,15 +688,14 @@ public class BlockResourceIT {
 
     @Test
     @Transactional
-    public void getNonExistingBlock() throws Exception {
+    void getNonExistingBlock() throws Exception {
         // Get the block
-        restBlockMockMvc.perform(get("/api/blocks/{id}", Long.MAX_VALUE))
-            .andExpect(status().isNotFound());
+        restBlockMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
     }
 
     @Test
     @Transactional
-    public void updateBlock() throws Exception {
+    void putNewBlock() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
@@ -724,16 +705,15 @@ public class BlockResourceIT {
         Block updatedBlock = blockRepository.findById(block.getId()).get();
         // Disconnect from session so that the updates on updatedBlock are not directly saved in db
         em.detach(updatedBlock);
-        updatedBlock
-            .type(UPDATED_TYPE)
-            .content(UPDATED_CONTENT)
-            .createdDate(UPDATED_CREATED_DATE)
-            .hash(UPDATED_HASH);
+        updatedBlock.type(UPDATED_TYPE).content(UPDATED_CONTENT).createdDate(UPDATED_CREATED_DATE).hash(UPDATED_HASH);
         BlockDTO blockDTO = blockMapper.toDto(updatedBlock);
 
-        restBlockMockMvc.perform(put("/api/blocks")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(blockDTO)))
+        restBlockMockMvc
+            .perform(
+                put(ENTITY_API_URL_ID, blockDTO.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtil.convertObjectToJsonBytes(blockDTO))
+            )
             .andExpect(status().isOk());
 
         // Validate the Block in the database
@@ -744,71 +724,217 @@ public class BlockResourceIT {
         assertThat(testBlock.getContent()).isEqualTo(UPDATED_CONTENT);
         assertThat(testBlock.getCreatedDate()).isEqualTo(UPDATED_CREATED_DATE);
         assertThat(testBlock.getHash()).isEqualTo(UPDATED_HASH);
-
-        // Validate the Block in Elasticsearch
-        verify(mockBlockSearchRepository, times(1)).save(testBlock);
     }
 
     @Test
     @Transactional
-    public void updateNonExistingBlock() throws Exception {
+    void putNonExistingBlock() throws Exception {
         int databaseSizeBeforeUpdate = blockRepository.findAll().size();
+        block.setId(count.incrementAndGet());
 
         // Create the Block
         BlockDTO blockDTO = blockMapper.toDto(block);
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
-        restBlockMockMvc.perform(put("/api/blocks")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(blockDTO)))
+        restBlockMockMvc
+            .perform(
+                put(ENTITY_API_URL_ID, blockDTO.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtil.convertObjectToJsonBytes(blockDTO))
+            )
             .andExpect(status().isBadRequest());
 
         // Validate the Block in the database
         List<Block> blockList = blockRepository.findAll();
         assertThat(blockList).hasSize(databaseSizeBeforeUpdate);
-
-        // Validate the Block in Elasticsearch
-        verify(mockBlockSearchRepository, times(0)).save(block);
     }
 
     @Test
     @Transactional
-    public void deleteBlock() throws Exception {
+    void putWithIdMismatchBlock() throws Exception {
+        int databaseSizeBeforeUpdate = blockRepository.findAll().size();
+        block.setId(count.incrementAndGet());
+
+        // Create the Block
+        BlockDTO blockDTO = blockMapper.toDto(block);
+
+        // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+        restBlockMockMvc
+            .perform(
+                put(ENTITY_API_URL_ID, count.incrementAndGet())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtil.convertObjectToJsonBytes(blockDTO))
+            )
+            .andExpect(status().isBadRequest());
+
+        // Validate the Block in the database
+        List<Block> blockList = blockRepository.findAll();
+        assertThat(blockList).hasSize(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void putWithMissingIdPathParamBlock() throws Exception {
+        int databaseSizeBeforeUpdate = blockRepository.findAll().size();
+        block.setId(count.incrementAndGet());
+
+        // Create the Block
+        BlockDTO blockDTO = blockMapper.toDto(block);
+
+        // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+        restBlockMockMvc
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(blockDTO)))
+            .andExpect(status().isMethodNotAllowed());
+
+        // Validate the Block in the database
+        List<Block> blockList = blockRepository.findAll();
+        assertThat(blockList).hasSize(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void partialUpdateBlockWithPatch() throws Exception {
+        // Initialize the database
+        blockRepository.saveAndFlush(block);
+
+        int databaseSizeBeforeUpdate = blockRepository.findAll().size();
+
+        // Update the block using partial update
+        Block partialUpdatedBlock = new Block();
+        partialUpdatedBlock.setId(block.getId());
+
+        partialUpdatedBlock.createdDate(UPDATED_CREATED_DATE);
+
+        restBlockMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, partialUpdatedBlock.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedBlock))
+            )
+            .andExpect(status().isOk());
+
+        // Validate the Block in the database
+        List<Block> blockList = blockRepository.findAll();
+        assertThat(blockList).hasSize(databaseSizeBeforeUpdate);
+        Block testBlock = blockList.get(blockList.size() - 1);
+        assertThat(testBlock.getType()).isEqualTo(DEFAULT_TYPE);
+        assertThat(testBlock.getContent()).isEqualTo(DEFAULT_CONTENT);
+        assertThat(testBlock.getCreatedDate()).isEqualTo(UPDATED_CREATED_DATE);
+        assertThat(testBlock.getHash()).isEqualTo(DEFAULT_HASH);
+    }
+
+    @Test
+    @Transactional
+    void fullUpdateBlockWithPatch() throws Exception {
+        // Initialize the database
+        blockRepository.saveAndFlush(block);
+
+        int databaseSizeBeforeUpdate = blockRepository.findAll().size();
+
+        // Update the block using partial update
+        Block partialUpdatedBlock = new Block();
+        partialUpdatedBlock.setId(block.getId());
+
+        partialUpdatedBlock.type(UPDATED_TYPE).content(UPDATED_CONTENT).createdDate(UPDATED_CREATED_DATE).hash(UPDATED_HASH);
+
+        restBlockMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, partialUpdatedBlock.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedBlock))
+            )
+            .andExpect(status().isOk());
+
+        // Validate the Block in the database
+        List<Block> blockList = blockRepository.findAll();
+        assertThat(blockList).hasSize(databaseSizeBeforeUpdate);
+        Block testBlock = blockList.get(blockList.size() - 1);
+        assertThat(testBlock.getType()).isEqualTo(UPDATED_TYPE);
+        assertThat(testBlock.getContent()).isEqualTo(UPDATED_CONTENT);
+        assertThat(testBlock.getCreatedDate()).isEqualTo(UPDATED_CREATED_DATE);
+        assertThat(testBlock.getHash()).isEqualTo(UPDATED_HASH);
+    }
+
+    @Test
+    @Transactional
+    void patchNonExistingBlock() throws Exception {
+        int databaseSizeBeforeUpdate = blockRepository.findAll().size();
+        block.setId(count.incrementAndGet());
+
+        // Create the Block
+        BlockDTO blockDTO = blockMapper.toDto(block);
+
+        // If the entity doesn't have an ID, it will throw BadRequestAlertException
+        restBlockMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, blockDTO.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(blockDTO))
+            )
+            .andExpect(status().isBadRequest());
+
+        // Validate the Block in the database
+        List<Block> blockList = blockRepository.findAll();
+        assertThat(blockList).hasSize(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void patchWithIdMismatchBlock() throws Exception {
+        int databaseSizeBeforeUpdate = blockRepository.findAll().size();
+        block.setId(count.incrementAndGet());
+
+        // Create the Block
+        BlockDTO blockDTO = blockMapper.toDto(block);
+
+        // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+        restBlockMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, count.incrementAndGet())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(blockDTO))
+            )
+            .andExpect(status().isBadRequest());
+
+        // Validate the Block in the database
+        List<Block> blockList = blockRepository.findAll();
+        assertThat(blockList).hasSize(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void patchWithMissingIdPathParamBlock() throws Exception {
+        int databaseSizeBeforeUpdate = blockRepository.findAll().size();
+        block.setId(count.incrementAndGet());
+
+        // Create the Block
+        BlockDTO blockDTO = blockMapper.toDto(block);
+
+        // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+        restBlockMockMvc
+            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(blockDTO)))
+            .andExpect(status().isMethodNotAllowed());
+
+        // Validate the Block in the database
+        List<Block> blockList = blockRepository.findAll();
+        assertThat(blockList).hasSize(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void deleteBlock() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
 
         int databaseSizeBeforeDelete = blockRepository.findAll().size();
 
         // Delete the block
-        restBlockMockMvc.perform(delete("/api/blocks/{id}", block.getId())
-            .accept(MediaType.APPLICATION_JSON))
+        restBlockMockMvc
+            .perform(delete(ENTITY_API_URL_ID, block.getId()).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item
         List<Block> blockList = blockRepository.findAll();
         assertThat(blockList).hasSize(databaseSizeBeforeDelete - 1);
-
-        // Validate the Block in Elasticsearch
-        verify(mockBlockSearchRepository, times(1)).deleteById(block.getId());
-    }
-
-    @Test
-    @Transactional
-    public void searchBlock() throws Exception {
-        // Configure the mock search repository
-        // Initialize the database
-        blockRepository.saveAndFlush(block);
-        when(mockBlockSearchRepository.search(queryStringQuery("id:" + block.getId()), PageRequest.of(0, 20)))
-            .thenReturn(new PageImpl<>(Collections.singletonList(block), PageRequest.of(0, 1), 1));
-
-        // Search the block
-        restBlockMockMvc.perform(get("/api/_search/blocks?query=id:" + block.getId()))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(block.getId().intValue())))
-            .andExpect(jsonPath("$.[*].type").value(hasItem(DEFAULT_TYPE.toString())))
-            .andExpect(jsonPath("$.[*].content").value(hasItem(DEFAULT_CONTENT)))
-            .andExpect(jsonPath("$.[*].createdDate").value(hasItem(sameInstant(DEFAULT_CREATED_DATE))))
-            .andExpect(jsonPath("$.[*].hash").value(hasItem(DEFAULT_HASH)));
     }
 }

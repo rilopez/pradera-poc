@@ -1,15 +1,16 @@
 package com.pradera.poc.service.dto;
 
-import java.time.ZonedDateTime;
-import javax.validation.constraints.*;
-import java.io.Serializable;
 import com.pradera.poc.domain.enumeration.BlockType;
+import java.io.Serializable;
+import java.time.ZonedDateTime;
+import java.util.Objects;
+import javax.validation.constraints.*;
 
 /**
  * A DTO for the {@link com.pradera.poc.domain.Block} entity.
  */
 public class BlockDTO implements Serializable {
-    
+
     private Long id;
 
     @NotNull
@@ -24,15 +25,10 @@ public class BlockDTO implements Serializable {
     @NotNull
     private String hash;
 
+    private BlockDTO parent;
 
-    private Long parentId;
+    private UserDTO user;
 
-    private String parentContent;
-
-    private Long userId;
-
-    private String userLogin;
-    
     public Long getId() {
         return id;
     }
@@ -73,36 +69,20 @@ public class BlockDTO implements Serializable {
         this.hash = hash;
     }
 
-    public Long getParentId() {
-        return parentId;
+    public BlockDTO getParent() {
+        return parent;
     }
 
-    public void setParentId(Long blockId) {
-        this.parentId = blockId;
+    public void setParent(BlockDTO parent) {
+        this.parent = parent;
     }
 
-    public String getParentContent() {
-        return parentContent;
+    public UserDTO getUser() {
+        return user;
     }
 
-    public void setParentContent(String blockContent) {
-        this.parentContent = blockContent;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public String getUserLogin() {
-        return userLogin;
-    }
-
-    public void setUserLogin(String userLogin) {
-        this.userLogin = userLogin;
+    public void setUser(UserDTO user) {
+        this.user = user;
     }
 
     @Override
@@ -114,12 +94,16 @@ public class BlockDTO implements Serializable {
             return false;
         }
 
-        return id != null && id.equals(((BlockDTO) o).id);
+        BlockDTO blockDTO = (BlockDTO) o;
+        if (this.id == null) {
+            return false;
+        }
+        return Objects.equals(this.id, blockDTO.id);
     }
 
     @Override
     public int hashCode() {
-        return 31;
+        return Objects.hash(this.id);
     }
 
     // prettier-ignore
@@ -131,10 +115,8 @@ public class BlockDTO implements Serializable {
             ", content='" + getContent() + "'" +
             ", createdDate='" + getCreatedDate() + "'" +
             ", hash='" + getHash() + "'" +
-            ", parentId=" + getParentId() +
-            ", parentContent='" + getParentContent() + "'" +
-            ", userId=" + getUserId() +
-            ", userLogin='" + getUserLogin() + "'" +
+            ", parent=" + getParent() +
+            ", user=" + getUser() +
             "}";
     }
 }

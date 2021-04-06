@@ -3,10 +3,8 @@ package com.pradera.poc.web.websocket;
 import static com.pradera.poc.config.WebsocketConfiguration.IP_ADDRESS;
 
 import com.pradera.poc.web.websocket.dto.ActivityDTO;
-
 import java.security.Principal;
 import java.time.Instant;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;

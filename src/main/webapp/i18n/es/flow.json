@@ -1,0 +1,27 @@
+{
+  "praderaApp": {
+    "flow": {
+      "home": {
+        "title": "Flows",
+        "refreshListLabel": "Refrescar lista",
+        "createLabel": "Crear nuevo Flow",
+        "createOrEditLabel": "Crear o editar Flow",
+        "notFound": "Ningún Flows encontrado"
+      },
+      "created": "Un nuevo Flow ha sido creado con el identificador {{ param }}",
+      "updated": "Un Flow ha sido actualizado con el identificador {{ param }}",
+      "deleted": "Un Flow ha sido eliminado con el identificador {{ param }}",
+      "delete": {
+        "question": "¿Seguro que quiere eliminar Flow {{ id }}?"
+      },
+      "detail": {
+        "title": "Flow"
+      },
+      "id": "ID",
+      "name": "Name",
+      "user": "User",
+      "book": "Book",
+      "blocks": "Blocks"
+    }
+  }
+}

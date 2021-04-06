@@ -3,9 +3,9 @@
     "block": {
       "home": {
         "title": "Blocks",
+        "refreshListLabel": "Refrescar lista",
         "createLabel": "Crear nuevo Block",
         "createOrEditLabel": "Crear o editar Block",
-        "search": "Buscar Block",
         "notFound": "Ningún Blocks encontrado"
       },
       "created": "Un nuevo Block ha sido creado con el identificador {{ param }}",
@@ -17,12 +17,14 @@
       "detail": {
         "title": "Block"
       },
+      "id": "ID",
       "type": "Type",
       "content": "Content",
       "createdDate": "Created Date",
       "hash": "Hash",
       "parent": "Parent",
-      "user": "User"
+      "user": "User",
+      "flows": "Flows"
     }
   }
 }

@@ -1,13 +1,14 @@
 package com.pradera.poc.service.dto;
 
-import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
-import com.pradera.poc.web.rest.TestUtil;
 
-public class BlockDTOTest {
+import com.pradera.poc.web.rest.TestUtil;
+import org.junit.jupiter.api.Test;
+
+class BlockDTOTest {
 
     @Test
-    public void dtoEqualsVerifier() throws Exception {
+    void dtoEqualsVerifier() throws Exception {
         TestUtil.equalsVerifier(BlockDTO.class);
         BlockDTO blockDTO1 = new BlockDTO();
         blockDTO1.setId(1L);

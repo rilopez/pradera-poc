@@ -1,0 +1,72 @@
+application {
+  config {
+    applicationType monolith
+    authenticationType jwt
+    baseName pradera
+    blueprints []
+    buildTool gradle
+    cacheProvider ehcache
+    clientFramework react
+    clientPackageManager npm
+    clientTheme none
+    creationTimestamp 1617117668227
+    databaseType sql
+    devDatabaseType h2Disk
+    dtoSuffix DTO
+    embeddableLaunchScript false
+    enableHibernateCache true
+    enableSwaggerCodegen true
+    enableTranslation true
+    jhiPrefix jhi
+    jwtSecretKey "NmEzOWE0YWNhZGNkNmMzN2U3Y2VjNzE3MjE4NWFlYTgwZmY1MzFmMmZjNjIwZjRmMDdjMjA0ODIyZjI0YzgxNWM5NjZlNmFhMjczYmQwYzE4ODEwMzNiMTMwMmE5Y2NkZDEwMGFjMDIwYjYzYWMzZjNiYzJkOWRiNDliNzIxMDA="
+    languages [en, es]
+    messageBroker false
+    nativeLanguage en
+    otherModules []
+    packageName com.pradera.poc
+    prodDatabaseType postgresql
+    serverPort 8080
+    serviceDiscoveryType false
+    skipClient false
+    skipServer false
+    skipUserManagement false
+    testFrameworks [cypress]
+    websocket spring-websocket
+  }
+
+  entities Block, Flow, Book
+}
+
+entity Book {
+  title String required minlength(3)
+}
+entity Block {
+  type BlockType required,
+  content String required,
+  createdDate ZonedDateTime required,
+  hash String required
+}
+entity Flow {
+  name String required minlength(3)
+}
+enum BlockType {
+  TITLE,
+  PARAGRAPH,
+  CHAPTER
+}
+
+relationship ManyToOne {
+  Block{parent(content)} to Block,
+  Block{user(login) required} to User,
+  Flow{user(login)} to User,
+  Flow{book(title)} to Book
+}
+
+relationship ManyToMany {
+  Flow{blocks(content)} to Block{flows(name)},
+}
+
+dto Block, Flow, Book with mapstruct
+paginate Block, Flow, Book with pagination
+service Block, Flow, Book with serviceClass
+filter Block, Flow, Book

@@ -77,7 +77,9 @@
   "dependencies": {
     "@bangle.dev/core": "^0.7.2",
     "@bangle.dev/react": "^0.7.2",
+    "@bangle.dev/react-menu": "^0.7.2",
     "@bangle.dev/text-formatting": "^0.7.2",
+    "@bangle.dev/tooltip": "^0.7.2",
     "@fortawesome/fontawesome-svg-core": "1.2.35",
     "@fortawesome/free-solid-svg-icons": "5.15.3",
     "@fortawesome/react-fontawesome": "0.1.14",
@@ -96,6 +98,7 @@
     "react-redux": "7.2.3",
     "react-redux-loading-bar": "5.0.0",
     "react-router-dom": "5.2.0",
+    "react-syntax-highlighter": "^15.4.3",
     "react-toastify": "7.0.3",
     "react-transition-group": "4.4.1",
     "reactstrap": "8.9.0",

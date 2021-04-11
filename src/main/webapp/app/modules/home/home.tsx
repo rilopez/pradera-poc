@@ -6,9 +6,29 @@ import {Translate} from 'react-jhipster';
 import {connect} from 'react-redux';
 import {Row, Col, Alert} from 'reactstrap';
 import {useEditorState, BangleEditor} from '@bangle.dev/react';
-import {Plugin} from '@bangle.dev/core';
+import {Plugin, SpecRegistry} from '@bangle.dev/core';
 import {superscript, subscript} from '@bangle.dev/text-formatting';
-import {corePlugins, coreSpec} from '@bangle.dev/core/utils/core-components';
+import {
+  history,
+  bold,
+  code,
+  italic,
+  strike,
+  link,
+  underline,
+  doc,
+  text,
+  paragraph,
+  blockquote,
+  bulletList,
+  codeBlock,
+  hardBreak,
+  heading,
+  horizontalRule,
+  listItem,
+  orderedList,
+  image,
+} from '@bangle.dev/core/components';
 import {
   floatingMenu,
   FloatingMenu,
@@ -31,7 +51,7 @@ const menuKey = new PluginKey('menuKey');
 
 export const Home = (props: IHomeProp) => {
   const {account} = props;
-  const [doc, setDoc] = useState(null)
+  const [docState, setDocState] = useState(null)
 
   const updatePlugin = new Plugin({
     view: () => ({
@@ -39,16 +59,54 @@ export const Home = (props: IHomeProp) => {
       update(view, prevState) {
         if (!view.state.doc.eq(prevState.doc)) {
           //TODO send state to database
-          setDoc(view.state.doc.toJSON());
+          setDocState(view.state.doc.toJSON());
         }
       },
     })
   })
-
+  //TODO resolve account before setting
+  const accountLogin = account.login;
   const editorState = useEditorState({
-    specs: coreSpec(),
+    specs: [
+      bold.spec(),
+      link.spec(),
+      underline.spec(),
+      doc.spec(),
+      text.spec(),
+      {...paragraph.spec(),
+        schema: {
+          ...paragraph.spec().schema,
+          attrs: { userId: {  default: "accountLogin" } }
+        },
+      },
+      blockquote.spec(),
+      bulletList.spec(),
+      codeBlock.spec(),
+      hardBreak.spec(),
+      heading.spec(),
+      horizontalRule.spec(),
+      listItem.spec(),
+      orderedList.spec(),
+      image.spec(),
+
+    ],
     plugins: () => [
-      ...corePlugins(),
+      bold.plugins(),
+
+
+      link.plugins(),
+      underline.plugins(),
+      paragraph.plugins(),
+      blockquote.plugins(),
+      bulletList.plugins(),
+      codeBlock.plugins(),
+      hardBreak.plugins(),
+      heading.plugins(),
+      horizontalRule.plugins(),
+      listItem.plugins(),
+      orderedList.plugins(),
+      image.plugins(),
+      history.plugins(),
       updatePlugin,
       floatingMenu.plugins({
         key: menuKey,
@@ -59,7 +117,7 @@ export const Home = (props: IHomeProp) => {
   //console.log("editorState.pmState.doc", editorState.pmState.doc.toJSON())
   return (
     <Row>
-      <Col md="3" className="pad"></Col>
+      <Col md="3" className="pad">{account.login}</Col>
       <Col md="9">
         <BangleEditor state={editorState}>
           <FloatingMenu menuKey={menuKey}
@@ -82,7 +140,7 @@ export const Home = (props: IHomeProp) => {
                         }}
           />
           <SyntaxHighlighter language="json" style={solarizedlight} showLineNumbers={true}>
-            {JSON.stringify(doc, null, 1)}
+            {JSON.stringify(docState, null, 1)}
           </SyntaxHighlighter>
         </BangleEditor>
       </Col>

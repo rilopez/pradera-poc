@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Link, RouteComponentProps } from 'react-router-dom';
 import { Button, Row, Col, Label } from 'reactstrap';
 import { AvFeedback, AvForm, AvGroup, AvInput, AvField } from 'availity-reactstrap-validation';
-import { Translate, translate } from 'react-jhipster';
+import { setFileData, byteSize, Translate, translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
 
@@ -12,7 +12,7 @@ import { IUser } from 'app/shared/model/user.model';
 import { getUsers } from 'app/modules/administration/user-management/user-management.reducer';
 import { IFlow } from 'app/shared/model/flow.model';
 import { getEntities as getFlows } from 'app/entities/flow/flow.reducer';
-import { getEntity, updateEntity, createEntity, reset } from './block.reducer';
+import { getEntity, updateEntity, createEntity, setBlob, reset } from './block.reducer';
 import { IBlock } from 'app/shared/model/block.model';
 import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
 import { mapIdList } from 'app/shared/util/entity-utils';
@@ -23,6 +23,8 @@ export const BlockUpdate = (props: IBlockUpdateProps) => {
   const [isNew] = useState(!props.match.params || !props.match.params.id);
 
   const { blockEntity, blocks, users, flows, loading, updating } = props;
+
+  const { content } = blockEntity;
 
   const handleClose = () => {
     props.history.push('/block' + props.location.search);
@@ -39,6 +41,14 @@ export const BlockUpdate = (props: IBlockUpdateProps) => {
     props.getUsers();
     props.getFlows();
   }, []);
+
+  const onBlobChange = (isAnImage, name) => event => {
+    setFileData(event, (contentType, data) => props.setBlob(name, data, contentType), isAnImage);
+  };
+
+  const clearBlob = name => () => {
+    props.setBlob(name, undefined, undefined);
+  };
 
   useEffect(() => {
     if (props.updateSuccess) {
@@ -109,10 +119,10 @@ export const BlockUpdate = (props: IBlockUpdateProps) => {
                 <Label id="contentLabel" for="block-content">
                   <Translate contentKey="praderaApp.block.content">Content</Translate>
                 </Label>
-                <AvField
+                <AvInput
                   id="block-content"
                   data-cy="content"
-                  type="text"
+                  type="textarea"
                   name="content"
                   validate={{
                     required: { value: true, errorMessage: translate('entity.validation.required') },
@@ -220,6 +230,7 @@ const mapDispatchToProps = {
   getFlows,
   getEntity,
   updateEntity,
+  setBlob,
   createEntity,
   reset,
 };

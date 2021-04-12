@@ -10,6 +10,7 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Type;
 
 /**
  * A Block.
@@ -31,7 +32,8 @@ public class Block implements Serializable {
     @Column(name = "type", nullable = false)
     private BlockType type;
 
-    @NotNull
+    @Lob
+    @Type(type = "org.hibernate.type.TextType")
     @Column(name = "content", nullable = false)
     private String content;
 

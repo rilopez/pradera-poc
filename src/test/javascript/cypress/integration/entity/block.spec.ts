@@ -90,13 +90,13 @@ describe('Block e2e test', () => {
     cy.get(`[data-cy="type"]`).select('PARAGRAPH');
 
 
-    cy.get(`[data-cy="content"]`).type('override Dynamic', { force: true }).invoke('val').should('match', new RegExp('override Dynamic'));
+    cy.get(`[data-cy="content"]`).type('../fake-data/blob/block-1.txt', { force: true }).invoke('val').should('match', new RegExp('../fake-data/blob/block-1.txt'));
 
 
-    cy.get(`[data-cy="createdDate"]`).type('2021-03-30T04:52').invoke('val').should('equal', '2021-03-30T04:52');
+    cy.get(`[data-cy="createdDate"]`).type('2021-03-30T04:41').invoke('val').should('equal', '2021-03-30T04:41');
 
 
-    cy.get(`[data-cy="hash"]`).type('Licensed payment web-readiness', { force: true }).invoke('val').should('match', new RegExp('Licensed payment web-readiness'));
+    cy.get(`[data-cy="hash"]`).type('silver tan auxiliary', { force: true }).invoke('val').should('match', new RegExp('silver tan auxiliary'));
 
     cy.setFieldSelectToLastOfEntity('parent');
 

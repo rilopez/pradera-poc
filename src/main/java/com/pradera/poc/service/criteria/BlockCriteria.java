@@ -47,8 +47,6 @@ public class BlockCriteria implements Serializable, Criteria {
 
     private BlockTypeFilter type;
 
-    private StringFilter content;
-
     private ZonedDateTimeFilter createdDate;
 
     private StringFilter hash;
@@ -64,7 +62,6 @@ public class BlockCriteria implements Serializable, Criteria {
     public BlockCriteria(BlockCriteria other) {
         this.id = other.id == null ? null : other.id.copy();
         this.type = other.type == null ? null : other.type.copy();
-        this.content = other.content == null ? null : other.content.copy();
         this.createdDate = other.createdDate == null ? null : other.createdDate.copy();
         this.hash = other.hash == null ? null : other.hash.copy();
         this.parentId = other.parentId == null ? null : other.parentId.copy();
@@ -105,21 +102,6 @@ public class BlockCriteria implements Serializable, Criteria {
 
     public void setType(BlockTypeFilter type) {
         this.type = type;
-    }
-
-    public StringFilter getContent() {
-        return content;
-    }
-
-    public StringFilter content() {
-        if (content == null) {
-            content = new StringFilter();
-        }
-        return content;
-    }
-
-    public void setContent(StringFilter content) {
-        this.content = content;
     }
 
     public ZonedDateTimeFilter getCreatedDate() {
@@ -209,7 +191,6 @@ public class BlockCriteria implements Serializable, Criteria {
         return (
             Objects.equals(id, that.id) &&
             Objects.equals(type, that.type) &&
-            Objects.equals(content, that.content) &&
             Objects.equals(createdDate, that.createdDate) &&
             Objects.equals(hash, that.hash) &&
             Objects.equals(parentId, that.parentId) &&
@@ -220,7 +201,7 @@ public class BlockCriteria implements Serializable, Criteria {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, type, content, createdDate, hash, parentId, userId, flowsId);
+        return Objects.hash(id, type, createdDate, hash, parentId, userId, flowsId);
     }
 
     // prettier-ignore
@@ -229,7 +210,6 @@ public class BlockCriteria implements Serializable, Criteria {
         return "BlockCriteria{" +
             (id != null ? "id=" + id + ", " : "") +
             (type != null ? "type=" + type + ", " : "") +
-            (content != null ? "content=" + content + ", " : "") +
             (createdDate != null ? "createdDate=" + createdDate + ", " : "") +
             (hash != null ? "hash=" + hash + ", " : "") +
             (parentId != null ? "parentId=" + parentId + ", " : "") +

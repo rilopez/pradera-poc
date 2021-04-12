@@ -89,9 +89,6 @@ public class BlockQueryService extends QueryService<Block> {
             if (criteria.getType() != null) {
                 specification = specification.and(buildSpecification(criteria.getType(), Block_.type));
             }
-            if (criteria.getContent() != null) {
-                specification = specification.and(buildStringSpecification(criteria.getContent(), Block_.content));
-            }
             if (criteria.getCreatedDate() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getCreatedDate(), Block_.createdDate));
             }

@@ -32,6 +32,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Base64Utils;
 
 /**
  * Integration tests for the {@link BlockResource} REST controller.
@@ -170,24 +171,6 @@ class BlockResourceIT {
 
     @Test
     @Transactional
-    void checkContentIsRequired() throws Exception {
-        int databaseSizeBeforeTest = blockRepository.findAll().size();
-        // set the field null
-        block.setContent(null);
-
-        // Create the Block, which fails.
-        BlockDTO blockDTO = blockMapper.toDto(block);
-
-        restBlockMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(blockDTO)))
-            .andExpect(status().isBadRequest());
-
-        List<Block> blockList = blockRepository.findAll();
-        assertThat(blockList).hasSize(databaseSizeBeforeTest);
-    }
-
-    @Test
-    @Transactional
     void checkCreatedDateIsRequired() throws Exception {
         int databaseSizeBeforeTest = blockRepository.findAll().size();
         // set the field null
@@ -235,7 +218,7 @@ class BlockResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(block.getId().intValue())))
             .andExpect(jsonPath("$.[*].type").value(hasItem(DEFAULT_TYPE.toString())))
-            .andExpect(jsonPath("$.[*].content").value(hasItem(DEFAULT_CONTENT)))
+            .andExpect(jsonPath("$.[*].content").value(hasItem(DEFAULT_CONTENT.toString())))
             .andExpect(jsonPath("$.[*].createdDate").value(hasItem(sameInstant(DEFAULT_CREATED_DATE))))
             .andExpect(jsonPath("$.[*].hash").value(hasItem(DEFAULT_HASH)));
     }
@@ -253,7 +236,7 @@ class BlockResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(block.getId().intValue()))
             .andExpect(jsonPath("$.type").value(DEFAULT_TYPE.toString()))
-            .andExpect(jsonPath("$.content").value(DEFAULT_CONTENT))
+            .andExpect(jsonPath("$.content").value(DEFAULT_CONTENT.toString()))
             .andExpect(jsonPath("$.createdDate").value(sameInstant(DEFAULT_CREATED_DATE)))
             .andExpect(jsonPath("$.hash").value(DEFAULT_HASH));
     }
@@ -326,84 +309,6 @@ class BlockResourceIT {
 
         // Get all the blockList where type is null
         defaultBlockShouldNotBeFound("type.specified=false");
-    }
-
-    @Test
-    @Transactional
-    void getAllBlocksByContentIsEqualToSomething() throws Exception {
-        // Initialize the database
-        blockRepository.saveAndFlush(block);
-
-        // Get all the blockList where content equals to DEFAULT_CONTENT
-        defaultBlockShouldBeFound("content.equals=" + DEFAULT_CONTENT);
-
-        // Get all the blockList where content equals to UPDATED_CONTENT
-        defaultBlockShouldNotBeFound("content.equals=" + UPDATED_CONTENT);
-    }
-
-    @Test
-    @Transactional
-    void getAllBlocksByContentIsNotEqualToSomething() throws Exception {
-        // Initialize the database
-        blockRepository.saveAndFlush(block);
-
-        // Get all the blockList where content not equals to DEFAULT_CONTENT
-        defaultBlockShouldNotBeFound("content.notEquals=" + DEFAULT_CONTENT);
-
-        // Get all the blockList where content not equals to UPDATED_CONTENT
-        defaultBlockShouldBeFound("content.notEquals=" + UPDATED_CONTENT);
-    }
-
-    @Test
-    @Transactional
-    void getAllBlocksByContentIsInShouldWork() throws Exception {
-        // Initialize the database
-        blockRepository.saveAndFlush(block);
-
-        // Get all the blockList where content in DEFAULT_CONTENT or UPDATED_CONTENT
-        defaultBlockShouldBeFound("content.in=" + DEFAULT_CONTENT + "," + UPDATED_CONTENT);
-
-        // Get all the blockList where content equals to UPDATED_CONTENT
-        defaultBlockShouldNotBeFound("content.in=" + UPDATED_CONTENT);
-    }
-
-    @Test
-    @Transactional
-    void getAllBlocksByContentIsNullOrNotNull() throws Exception {
-        // Initialize the database
-        blockRepository.saveAndFlush(block);
-
-        // Get all the blockList where content is not null
-        defaultBlockShouldBeFound("content.specified=true");
-
-        // Get all the blockList where content is null
-        defaultBlockShouldNotBeFound("content.specified=false");
-    }
-
-    @Test
-    @Transactional
-    void getAllBlocksByContentContainsSomething() throws Exception {
-        // Initialize the database
-        blockRepository.saveAndFlush(block);
-
-        // Get all the blockList where content contains DEFAULT_CONTENT
-        defaultBlockShouldBeFound("content.contains=" + DEFAULT_CONTENT);
-
-        // Get all the blockList where content contains UPDATED_CONTENT
-        defaultBlockShouldNotBeFound("content.contains=" + UPDATED_CONTENT);
-    }
-
-    @Test
-    @Transactional
-    void getAllBlocksByContentNotContainsSomething() throws Exception {
-        // Initialize the database
-        blockRepository.saveAndFlush(block);
-
-        // Get all the blockList where content does not contain DEFAULT_CONTENT
-        defaultBlockShouldNotBeFound("content.doesNotContain=" + DEFAULT_CONTENT);
-
-        // Get all the blockList where content does not contain UPDATED_CONTENT
-        defaultBlockShouldBeFound("content.doesNotContain=" + UPDATED_CONTENT);
     }
 
     @Test
@@ -655,7 +560,7 @@ class BlockResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(block.getId().intValue())))
             .andExpect(jsonPath("$.[*].type").value(hasItem(DEFAULT_TYPE.toString())))
-            .andExpect(jsonPath("$.[*].content").value(hasItem(DEFAULT_CONTENT)))
+            .andExpect(jsonPath("$.[*].content").value(hasItem(DEFAULT_CONTENT.toString())))
             .andExpect(jsonPath("$.[*].createdDate").value(hasItem(sameInstant(DEFAULT_CREATED_DATE))))
             .andExpect(jsonPath("$.[*].hash").value(hasItem(DEFAULT_HASH)));
 

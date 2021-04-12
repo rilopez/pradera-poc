@@ -4,6 +4,7 @@ import com.pradera.poc.domain.enumeration.BlockType;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Objects;
+import javax.persistence.Lob;
 import javax.validation.constraints.*;
 
 /**
@@ -16,7 +17,7 @@ public class BlockDTO implements Serializable {
     @NotNull
     private BlockType type;
 
-    @NotNull
+    @Lob
     private String content;
 
     @NotNull

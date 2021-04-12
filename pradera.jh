@@ -42,7 +42,7 @@ entity Book {
 }
 entity Block {
   type BlockType required,
-  content String required,
+  content TextBlob required,
   createdDate ZonedDateTime required,
   hash String required
 }

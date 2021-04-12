@@ -48,14 +48,15 @@ export const FlowDetail = (props: IFlowDetailProps) => {
             <Translate contentKey="praderaApp.flow.blocks">Blocks</Translate>
           </dt>
           <dd>
+            <ol>
             {flowEntity.blocks
               ? flowEntity.blocks.map((val, i) => (
-                  <span key={val.id}>
-                    <a>{val.content}</a>
-                    {flowEntity.blocks && i === flowEntity.blocks.length - 1 ? '' : ', '}
-                  </span>
+                  <li key={val.id}>
+                    <a>{val.content}</a> <br/>
+                  </li>
                 ))
               : null}
+            </ol>
           </dd>
         </dl>
         <Button tag={Link} to="/flow" replace color="info" data-cy="entityDetailsBackButton">

@@ -90,7 +90,7 @@ describe('Block e2e test', () => {
     cy.get(`[data-cy="type"]`).select('PARAGRAPH');
 
 
-    cy.get(`[data-cy="content"]`).type('../fake-data/blob/block-1.txt', { force: true }).invoke('val').should('match', new RegExp('../fake-data/blob/block-1.txt'));
+    cy.get(`[data-cy="content"]`).type('../fake-data/blob/hipster.txt', { force: true }).invoke('val').should('match', new RegExp('../fake-data/blob/hipster.txt'));
 
 
     cy.get(`[data-cy="createdDate"]`).type('2021-03-30T04:41').invoke('val').should('equal', '2021-03-30T04:41');

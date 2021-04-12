@@ -2,34 +2,26 @@ package com.pradera.poc.web.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.pradera.poc.IntegrationTest;
-import com.pradera.poc.domain.Block;
 import com.pradera.poc.domain.Book;
 import com.pradera.poc.domain.Flow;
+import com.pradera.poc.domain.FlowBlock;
 import com.pradera.poc.domain.User;
 import com.pradera.poc.repository.FlowRepository;
-import com.pradera.poc.service.FlowService;
 import com.pradera.poc.service.criteria.FlowCriteria;
 import com.pradera.poc.service.dto.FlowDTO;
 import com.pradera.poc.service.mapper.FlowMapper;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -39,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
  * Integration tests for the {@link FlowResource} REST controller.
  */
 @IntegrationTest
-@ExtendWith(MockitoExtension.class)
 @AutoConfigureMockMvc
 @WithMockUser
 class FlowResourceIT {
@@ -56,14 +47,8 @@ class FlowResourceIT {
     @Autowired
     private FlowRepository flowRepository;
 
-    @Mock
-    private FlowRepository flowRepositoryMock;
-
     @Autowired
     private FlowMapper flowMapper;
-
-    @Mock
-    private FlowService flowServiceMock;
 
     @Autowired
     private EntityManager em;
@@ -167,24 +152,6 @@ class FlowResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(flow.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)));
-    }
-
-    @SuppressWarnings({ "unchecked" })
-    void getAllFlowsWithEagerRelationshipsIsEnabled() throws Exception {
-        when(flowServiceMock.findAllWithEagerRelationships(any())).thenReturn(new PageImpl(new ArrayList<>()));
-
-        restFlowMockMvc.perform(get(ENTITY_API_URL + "?eagerload=true")).andExpect(status().isOk());
-
-        verify(flowServiceMock, times(1)).findAllWithEagerRelationships(any());
-    }
-
-    @SuppressWarnings({ "unchecked" })
-    void getAllFlowsWithEagerRelationshipsIsNotEnabled() throws Exception {
-        when(flowServiceMock.findAllWithEagerRelationships(any())).thenReturn(new PageImpl(new ArrayList<>()));
-
-        restFlowMockMvc.perform(get(ENTITY_API_URL + "?eagerload=true")).andExpect(status().isOk());
-
-        verify(flowServiceMock, times(1)).findAllWithEagerRelationships(any());
     }
 
     @Test
@@ -341,7 +308,7 @@ class FlowResourceIT {
     void getAllFlowsByBlocksIsEqualToSomething() throws Exception {
         // Initialize the database
         flowRepository.saveAndFlush(flow);
-        Block blocks = BlockResourceIT.createEntity(em);
+        FlowBlock blocks = FlowBlockResourceIT.createEntity(em);
         em.persist(blocks);
         em.flush();
         flow.addBlocks(blocks);

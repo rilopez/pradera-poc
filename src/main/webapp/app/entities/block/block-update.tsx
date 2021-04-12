@@ -10,8 +10,6 @@ import { IRootState } from 'app/shared/reducers';
 import { getEntities as getBlocks } from 'app/entities/block/block.reducer';
 import { IUser } from 'app/shared/model/user.model';
 import { getUsers } from 'app/modules/administration/user-management/user-management.reducer';
-import { IFlow } from 'app/shared/model/flow.model';
-import { getEntities as getFlows } from 'app/entities/flow/flow.reducer';
 import { getEntity, updateEntity, createEntity, setBlob, reset } from './block.reducer';
 import { IBlock } from 'app/shared/model/block.model';
 import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
@@ -22,7 +20,7 @@ export interface IBlockUpdateProps extends StateProps, DispatchProps, RouteCompo
 export const BlockUpdate = (props: IBlockUpdateProps) => {
   const [isNew] = useState(!props.match.params || !props.match.params.id);
 
-  const { blockEntity, blocks, users, flows, loading, updating } = props;
+  const { blockEntity, blocks, users, loading, updating } = props;
 
   const { content } = blockEntity;
 
@@ -39,7 +37,6 @@ export const BlockUpdate = (props: IBlockUpdateProps) => {
 
     props.getBlocks();
     props.getUsers();
-    props.getFlows();
   }, []);
 
   const onBlobChange = (isAnImage, name) => event => {
@@ -217,7 +214,6 @@ export const BlockUpdate = (props: IBlockUpdateProps) => {
 const mapStateToProps = (storeState: IRootState) => ({
   blocks: storeState.block.entities,
   users: storeState.userManagement.users,
-  flows: storeState.flow.entities,
   blockEntity: storeState.block.entity,
   loading: storeState.block.loading,
   updating: storeState.block.updating,
@@ -227,7 +223,6 @@ const mapStateToProps = (storeState: IRootState) => ({
 const mapDispatchToProps = {
   getBlocks,
   getUsers,
-  getFlows,
   getEntity,
   updateEntity,
   setBlob,

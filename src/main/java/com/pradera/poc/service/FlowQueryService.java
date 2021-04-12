@@ -100,7 +100,7 @@ public class FlowQueryService extends QueryService<Flow> {
             if (criteria.getBlocksId() != null) {
                 specification =
                     specification.and(
-                        buildSpecification(criteria.getBlocksId(), root -> root.join(Flow_.blocks, JoinType.LEFT).get(Block_.id))
+                        buildSpecification(criteria.getBlocksId(), root -> root.join(Flow_.blocks, JoinType.LEFT).get(FlowBlock_.id))
                     );
             }
         }

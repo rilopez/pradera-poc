@@ -1,0 +1,34 @@
+{
+  "name": "FlowBlock",
+  "fields": [
+    {
+      "fieldName": "blockOrder",
+      "fieldType": "Long",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "flow",
+      "otherEntityRelationshipName": "blocks",
+      "relationshipName": "flow"
+    },
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "block",
+      "otherEntityRelationshipName": "flows",
+      "relationshipName": "block"
+    }
+  ],
+  "entityTableName": "flow_block",
+  "dto": "mapstruct",
+  "pagination": "pagination",
+  "service": "serviceClass",
+  "jpaMetamodelFiltering": true,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "applications": ["pradera"],
+  "changelogDate": "20210330152508"
+}

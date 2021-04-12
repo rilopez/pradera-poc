@@ -107,10 +107,19 @@ public class BlockQueryService extends QueryService<Block> {
                         buildSpecification(criteria.getUserId(), root -> root.join(Block_.user, JoinType.LEFT).get(User_.id))
                     );
             }
+            if (criteria.getParentBlocksId() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(
+                            criteria.getParentBlocksId(),
+                            root -> root.join(Block_.parentBlocks, JoinType.LEFT).get(Block_.id)
+                        )
+                    );
+            }
             if (criteria.getFlowsId() != null) {
                 specification =
                     specification.and(
-                        buildSpecification(criteria.getFlowsId(), root -> root.join(Block_.flows, JoinType.LEFT).get(Flow_.id))
+                        buildSpecification(criteria.getFlowsId(), root -> root.join(Block_.flows, JoinType.LEFT).get(FlowBlock_.id))
                     );
             }
         }

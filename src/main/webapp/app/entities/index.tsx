@@ -7,6 +7,7 @@ import ErrorBoundaryRoute from 'app/shared/error/error-boundary-route';
 import Block from './block';
 import Flow from './flow';
 import Book from './book';
+import FlowBlock from './flow-block';
 /* jhipster-needle-add-route-import - JHipster will add routes here */
 
 const Routes = ({ match }) => (
@@ -16,6 +17,7 @@ const Routes = ({ match }) => (
       <ErrorBoundaryRoute path={`${match.url}block`} component={Block} />
       <ErrorBoundaryRoute path={`${match.url}flow`} component={Flow} />
       <ErrorBoundaryRoute path={`${match.url}book`} component={Book} />
+      <ErrorBoundaryRoute path={`${match.url}flow-block`} component={FlowBlock} />
       {/* jhipster-needle-add-route-path - JHipster will add routes here */}
     </Switch>
   </div>

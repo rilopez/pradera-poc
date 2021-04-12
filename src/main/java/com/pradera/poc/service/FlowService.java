@@ -77,15 +77,6 @@ public class FlowService {
     }
 
     /**
-     * Get all the flows with eager load of many-to-many relationships.
-     *
-     * @return the list of entities.
-     */
-    public Page<FlowDTO> findAllWithEagerRelationships(Pageable pageable) {
-        return flowRepository.findAllWithEagerRelationships(pageable).map(flowMapper::toDto);
-    }
-
-    /**
      * Get one flow by id.
      *
      * @param id the id of the entity.
@@ -94,7 +85,7 @@ public class FlowService {
     @Transactional(readOnly = true)
     public Optional<FlowDTO> findOne(Long id) {
         log.debug("Request to get Flow : {}", id);
-        return flowRepository.findOneWithEagerRelationships(id).map(flowMapper::toDto);
+        return flowRepository.findById(id).map(flowMapper::toDto);
     }
 
     /**

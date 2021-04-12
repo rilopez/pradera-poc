@@ -28,7 +28,7 @@
     {
       "relationshipType": "many-to-one",
       "otherEntityName": "block",
-      "otherEntityRelationshipName": "block",
+      "otherEntityRelationshipName": "parentBlocks",
       "relationshipName": "parent",
       "otherEntityField": "content"
     },
@@ -41,12 +41,16 @@
       "otherEntityField": "login"
     },
     {
-      "relationshipType": "many-to-many",
-      "otherEntityName": "flow",
-      "otherEntityRelationshipName": "blocks",
-      "relationshipName": "flows",
-      "otherEntityField": "name",
-      "ownerSide": false
+      "relationshipType": "one-to-many",
+      "otherEntityName": "block",
+      "otherEntityRelationshipName": "parent",
+      "relationshipName": "parentBlocks"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "flowBlock",
+      "otherEntityRelationshipName": "block",
+      "relationshipName": "flows"
     }
   ],
   "entityTableName": "block",

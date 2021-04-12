@@ -24,12 +24,10 @@
       "otherEntityField": "title"
     },
     {
-      "relationshipType": "many-to-many",
-      "otherEntityName": "block",
-      "otherEntityRelationshipName": "flows",
-      "relationshipName": "blocks",
-      "otherEntityField": "content",
-      "ownerSide": true
+      "relationshipType": "one-to-many",
+      "otherEntityName": "flowBlock",
+      "otherEntityRelationshipName": "flow",
+      "relationshipName": "blocks"
     }
   ],
   "entityTableName": "flow",

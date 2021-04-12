@@ -55,6 +55,8 @@ public class BlockCriteria implements Serializable, Criteria {
 
     private LongFilter userId;
 
+    private LongFilter parentBlocksId;
+
     private LongFilter flowsId;
 
     public BlockCriteria() {}
@@ -66,6 +68,7 @@ public class BlockCriteria implements Serializable, Criteria {
         this.hash = other.hash == null ? null : other.hash.copy();
         this.parentId = other.parentId == null ? null : other.parentId.copy();
         this.userId = other.userId == null ? null : other.userId.copy();
+        this.parentBlocksId = other.parentBlocksId == null ? null : other.parentBlocksId.copy();
         this.flowsId = other.flowsId == null ? null : other.flowsId.copy();
     }
 
@@ -164,6 +167,21 @@ public class BlockCriteria implements Serializable, Criteria {
         this.userId = userId;
     }
 
+    public LongFilter getParentBlocksId() {
+        return parentBlocksId;
+    }
+
+    public LongFilter parentBlocksId() {
+        if (parentBlocksId == null) {
+            parentBlocksId = new LongFilter();
+        }
+        return parentBlocksId;
+    }
+
+    public void setParentBlocksId(LongFilter parentBlocksId) {
+        this.parentBlocksId = parentBlocksId;
+    }
+
     public LongFilter getFlowsId() {
         return flowsId;
     }
@@ -195,13 +213,14 @@ public class BlockCriteria implements Serializable, Criteria {
             Objects.equals(hash, that.hash) &&
             Objects.equals(parentId, that.parentId) &&
             Objects.equals(userId, that.userId) &&
+            Objects.equals(parentBlocksId, that.parentBlocksId) &&
             Objects.equals(flowsId, that.flowsId)
         );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, type, createdDate, hash, parentId, userId, flowsId);
+        return Objects.hash(id, type, createdDate, hash, parentId, userId, parentBlocksId, flowsId);
     }
 
     // prettier-ignore
@@ -214,6 +233,7 @@ public class BlockCriteria implements Serializable, Criteria {
             (hash != null ? "hash=" + hash + ", " : "") +
             (parentId != null ? "parentId=" + parentId + ", " : "") +
             (userId != null ? "userId=" + userId + ", " : "") +
+            (parentBlocksId != null ? "parentBlocksId=" + parentBlocksId + ", " : "") +
             (flowsId != null ? "flowsId=" + flowsId + ", " : "") +
             "}";
     }

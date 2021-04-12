@@ -27,20 +27,6 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="20210330152308-1-relations" author="jhipster">
-
-        <createTable tableName="rel_flow__blocks">
-            <column name="blocks_id" type="bigint">
-                <constraints nullable="false"/>
-            </column>
-            <column name="flow_id" type="bigint">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-
-        <addPrimaryKey columnNames="flow_id, blocks_id" tableName="rel_flow__blocks"/>
-    </changeSet>
-
     <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
 
     <!--
@@ -59,14 +45,6 @@
             <column name="id" type="numeric"/>
             <column name="name" type="string"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
-        </loadData>
-
-        <loadData
-            file="config/liquibase/fake-data/rel_flow__blocks.csv"
-            separator=";"
-            tableName="rel_flow__blocks">
-            <column name="flow_id" type="numeric"/>
-            <column name="blocks_id" type="numeric"/>
         </loadData>
     </changeSet>
 </databaseChangeLog>

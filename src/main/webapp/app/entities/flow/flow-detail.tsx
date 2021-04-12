@@ -44,20 +44,6 @@ export const FlowDetail = (props: IFlowDetailProps) => {
             <Translate contentKey="praderaApp.flow.book">Book</Translate>
           </dt>
           <dd>{flowEntity.book ? flowEntity.book.title : ''}</dd>
-          <dt>
-            <Translate contentKey="praderaApp.flow.blocks">Blocks</Translate>
-          </dt>
-          <dd>
-            <ol>
-            {flowEntity.blocks
-              ? flowEntity.blocks.map((val, i) => (
-                  <li key={val.id}>
-                    <a>{val.content}</a> <br/>
-                  </li>
-                ))
-              : null}
-            </ol>
-          </dd>
         </dl>
         <Button tag={Link} to="/flow" replace color="info" data-cy="entityDetailsBackButton">
           <FontAwesomeIcon icon="arrow-left" />{' '}

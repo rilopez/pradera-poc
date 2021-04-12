@@ -11,8 +11,6 @@ import { IUser } from 'app/shared/model/user.model';
 import { getUsers } from 'app/modules/administration/user-management/user-management.reducer';
 import { IBook } from 'app/shared/model/book.model';
 import { getEntities as getBooks } from 'app/entities/book/book.reducer';
-import { IBlock } from 'app/shared/model/block.model';
-import { getEntities as getBlocks } from 'app/entities/block/block.reducer';
 import { getEntity, updateEntity, createEntity, reset } from './flow.reducer';
 import { IFlow } from 'app/shared/model/flow.model';
 import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
@@ -21,10 +19,9 @@ import { mapIdList } from 'app/shared/util/entity-utils';
 export interface IFlowUpdateProps extends StateProps, DispatchProps, RouteComponentProps<{ id: string }> {}
 
 export const FlowUpdate = (props: IFlowUpdateProps) => {
-  const [idsblocks, setIdsblocks] = useState([]);
   const [isNew] = useState(!props.match.params || !props.match.params.id);
 
-  const { flowEntity, users, books, blocks, loading, updating } = props;
+  const { flowEntity, users, books, loading, updating } = props;
 
   const handleClose = () => {
     props.history.push('/flow' + props.location.search);
@@ -39,7 +36,6 @@ export const FlowUpdate = (props: IFlowUpdateProps) => {
 
     props.getUsers();
     props.getBooks();
-    props.getBlocks();
   }, []);
 
   useEffect(() => {
@@ -53,7 +49,6 @@ export const FlowUpdate = (props: IFlowUpdateProps) => {
       const entity = {
         ...flowEntity,
         ...values,
-        blocks: mapIdList(values.blocks),
         user: users.find(it => it.id.toString() === values.userId.toString()),
         book: books.find(it => it.id.toString() === values.bookId.toString()),
       };
@@ -134,29 +129,6 @@ export const FlowUpdate = (props: IFlowUpdateProps) => {
                     : null}
                 </AvInput>
               </AvGroup>
-              <AvGroup>
-                <Label for="flow-blocks">
-                  <Translate contentKey="praderaApp.flow.blocks">Blocks</Translate>
-                </Label>
-                <AvInput
-                  id="flow-blocks"
-                  data-cy="blocks"
-                  type="select"
-                  multiple
-                  className="form-control"
-                  name="blocks"
-                  value={!isNew && flowEntity.blocks && flowEntity.blocks.map(e => e.id)}
-                >
-                  <option value="" key="0" />
-                  {blocks
-                    ? blocks.map(otherEntity => (
-                        <option value={otherEntity.id} key={otherEntity.id}>
-                          {otherEntity.content}
-                        </option>
-                      ))
-                    : null}
-                </AvInput>
-              </AvGroup>
               <Button tag={Link} id="cancel-save" to="/flow" replace color="info">
                 <FontAwesomeIcon icon="arrow-left" />
                 &nbsp;
@@ -181,7 +153,6 @@ export const FlowUpdate = (props: IFlowUpdateProps) => {
 const mapStateToProps = (storeState: IRootState) => ({
   users: storeState.userManagement.users,
   books: storeState.book.entities,
-  blocks: storeState.block.entities,
   flowEntity: storeState.flow.entity,
   loading: storeState.flow.loading,
   updating: storeState.flow.updating,
@@ -191,7 +162,6 @@ const mapStateToProps = (storeState: IRootState) => ({
 const mapDispatchToProps = {
   getUsers,
   getBooks,
-  getBlocks,
   getEntity,
   updateEntity,
   createEntity,

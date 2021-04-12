@@ -35,11 +35,10 @@ public class Flow implements Serializable {
     @ManyToOne
     private Book book;
 
-    @ManyToMany
+    @OneToMany(mappedBy = "flow")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JoinTable(name = "rel_flow__blocks", joinColumns = @JoinColumn(name = "flow_id"), inverseJoinColumns = @JoinColumn(name = "blocks_id"))
-    @JsonIgnoreProperties(value = { "parent", "user", "flows" }, allowSetters = true)
-    private Set<Block> blocks = new HashSet<>();
+    @JsonIgnoreProperties(value = { "flow", "block" }, allowSetters = true)
+    private Set<FlowBlock> blocks = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
     public Long getId() {
@@ -94,29 +93,35 @@ public class Flow implements Serializable {
         this.book = book;
     }
 
-    public Set<Block> getBlocks() {
+    public Set<FlowBlock> getBlocks() {
         return this.blocks;
     }
 
-    public Flow blocks(Set<Block> blocks) {
-        this.setBlocks(blocks);
+    public Flow blocks(Set<FlowBlock> flowBlocks) {
+        this.setBlocks(flowBlocks);
         return this;
     }
 
-    public Flow addBlocks(Block block) {
-        this.blocks.add(block);
-        block.getFlows().add(this);
+    public Flow addBlocks(FlowBlock flowBlock) {
+        this.blocks.add(flowBlock);
+        flowBlock.setFlow(this);
         return this;
     }
 
-    public Flow removeBlocks(Block block) {
-        this.blocks.remove(block);
-        block.getFlows().remove(this);
+    public Flow removeBlocks(FlowBlock flowBlock) {
+        this.blocks.remove(flowBlock);
+        flowBlock.setFlow(null);
         return this;
     }
 
-    public void setBlocks(Set<Block> blocks) {
-        this.blocks = blocks;
+    public void setBlocks(Set<FlowBlock> flowBlocks) {
+        if (this.blocks != null) {
+            this.blocks.forEach(i -> i.setFlow(null));
+        }
+        if (flowBlocks != null) {
+            flowBlocks.forEach(i -> i.setFlow(this));
+        }
+        this.blocks = flowBlocks;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

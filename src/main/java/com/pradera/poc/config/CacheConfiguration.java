@@ -49,10 +49,12 @@ public class CacheConfiguration {
             createCache(cm, com.pradera.poc.domain.Authority.class.getName());
             createCache(cm, com.pradera.poc.domain.User.class.getName() + ".authorities");
             createCache(cm, com.pradera.poc.domain.Block.class.getName());
+            createCache(cm, com.pradera.poc.domain.Block.class.getName() + ".parentBlocks");
             createCache(cm, com.pradera.poc.domain.Block.class.getName() + ".flows");
             createCache(cm, com.pradera.poc.domain.Flow.class.getName());
             createCache(cm, com.pradera.poc.domain.Flow.class.getName() + ".blocks");
             createCache(cm, com.pradera.poc.domain.Book.class.getName());
+            createCache(cm, com.pradera.poc.domain.FlowBlock.class.getName());
             // jhipster-needle-ehcache-add-entry
         };
     }

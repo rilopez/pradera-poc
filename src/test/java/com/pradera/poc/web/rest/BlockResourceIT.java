@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.pradera.poc.IntegrationTest;
 import com.pradera.poc.domain.Block;
 import com.pradera.poc.domain.Block;
-import com.pradera.poc.domain.Flow;
+import com.pradera.poc.domain.FlowBlock;
 import com.pradera.poc.domain.User;
 import com.pradera.poc.domain.enumeration.BlockType;
 import com.pradera.poc.repository.BlockRepository;
@@ -533,10 +533,29 @@ class BlockResourceIT {
 
     @Test
     @Transactional
+    void getAllBlocksByParentBlocksIsEqualToSomething() throws Exception {
+        // Initialize the database
+        blockRepository.saveAndFlush(block);
+        Block parentBlocks = BlockResourceIT.createEntity(em);
+        em.persist(parentBlocks);
+        em.flush();
+        block.addParentBlocks(parentBlocks);
+        blockRepository.saveAndFlush(block);
+        Long parentBlocksId = parentBlocks.getId();
+
+        // Get all the blockList where parentBlocks equals to parentBlocksId
+        defaultBlockShouldBeFound("parentBlocksId.equals=" + parentBlocksId);
+
+        // Get all the blockList where parentBlocks equals to (parentBlocksId + 1)
+        defaultBlockShouldNotBeFound("parentBlocksId.equals=" + (parentBlocksId + 1));
+    }
+
+    @Test
+    @Transactional
     void getAllBlocksByFlowsIsEqualToSomething() throws Exception {
         // Initialize the database
         blockRepository.saveAndFlush(block);
-        Flow flows = FlowResourceIT.createEntity(em);
+        FlowBlock flows = FlowBlockResourceIT.createEntity(em);
         em.persist(flows);
         em.flush();
         block.addFlows(flows);

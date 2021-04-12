@@ -1,9 +1,7 @@
 package com.pradera.poc.service.dto;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 import javax.validation.constraints.*;
 
 /**
@@ -20,8 +18,6 @@ public class FlowDTO implements Serializable {
     private UserDTO user;
 
     private BookDTO book;
-
-    private Set<BlockDTO> blocks = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -55,14 +51,6 @@ public class FlowDTO implements Serializable {
         this.book = book;
     }
 
-    public Set<BlockDTO> getBlocks() {
-        return blocks;
-    }
-
-    public void setBlocks(Set<BlockDTO> blocks) {
-        this.blocks = blocks;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -92,7 +80,6 @@ public class FlowDTO implements Serializable {
             ", name='" + getName() + "'" +
             ", user=" + getUser() +
             ", book=" + getBook() +
-            ", blocks=" + getBlocks() +
             "}";
     }
 }

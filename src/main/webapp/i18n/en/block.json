@@ -24,6 +24,7 @@
       "hash": "Hash",
       "parent": "Parent",
       "user": "User",
+      "parentBlocks": "Parent Blocks",
       "flows": "Flows"
     }
   }

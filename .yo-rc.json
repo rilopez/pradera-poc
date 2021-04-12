@@ -38,11 +38,11 @@
     "jhipsterVersion": "7.0.1",
     "entitySuffix": "",
     "reactive": false,
-    "entities": ["Block", "Flow", "Book"],
+    "entities": ["Block", "Flow", "Book", "FlowBlock"],
     "clientThemeVariant": "",
     "skipCheckLengthOfIdentifier": false,
     "skipFakeData": false,
     "pages": [],
-    "lastLiquibaseTimestamp": 1617117848000
+    "lastLiquibaseTimestamp": 1617117908000
   }
 }

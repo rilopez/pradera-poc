@@ -34,11 +34,16 @@ application {
     websocket spring-websocket
   }
 
-  entities Block, Flow, Book
+  entities Block, Flow, Book, FlowBlock
 }
 
 entity Book {
   title String required minlength(3)
+}
+enum BlockType {
+  TITLE,
+  PARAGRAPH,
+  CHAPTER
 }
 entity Block {
   type BlockType required,
@@ -49,24 +54,20 @@ entity Block {
 entity Flow {
   name String required minlength(3)
 }
-enum BlockType {
-  TITLE,
-  PARAGRAPH,
-  CHAPTER
+entity FlowBlock {
+  blockOrder Long required
 }
 
 relationship ManyToOne {
-  Block{parent(content)} to Block,
+  Block{parent(content)} to Block{parentBlocks},
   Block{user(login) required} to User,
   Flow{user(login)} to User,
-  Flow{book(title)} to Book
+  Flow{book(title)} to Book,
+  FlowBlock{flow} to Flow{blocks},
+  FlowBlock{block} to Block{flows},
 }
 
-relationship ManyToMany {
-  Flow{blocks(content)} to Block{flows(name)},
-}
-
-dto Block, Flow, Book with mapstruct
-paginate Block, Flow, Book with pagination
-service Block, Flow, Book with serviceClass
-filter Block, Flow, Book
+dto Block, Flow, Book, FlowBlock with mapstruct
+paginate Block, Flow, Book, FlowBlock with pagination
+service Block, Flow, Book, FlowBlock with serviceClass
+filter Block, Flow, Book, FlowBlock

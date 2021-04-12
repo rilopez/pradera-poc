@@ -19,17 +19,5 @@
                                  constraintName="fk_flow__book_id"
                                  referencedColumnNames="id"
                                  referencedTableName="book"/>
-
-        <addForeignKeyConstraint baseColumnNames="flow_id"
-                                 baseTableName="rel_flow__blocks"
-                                 constraintName="fk_rel_flow__blocks__flow_id"
-                                 referencedColumnNames="id"
-                                 referencedTableName="flow"/>
-
-        <addForeignKeyConstraint baseColumnNames="blocks_id"
-                                 baseTableName="rel_flow__blocks"
-                                 constraintName="fk_rel_flow__blocks__blocks_id"
-                                 referencedColumnNames="id"
-                                 referencedTableName="block"/>
     </changeSet>
 </databaseChangeLog>

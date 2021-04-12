@@ -46,17 +46,22 @@ public class Block implements Serializable {
     private String hash;
 
     @ManyToOne
-    @JsonIgnoreProperties(value = { "parent", "user", "flows" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "parent", "user", "parentBlocks", "flows" }, allowSetters = true)
     private Block parent;
 
     @ManyToOne(optional = false)
     @NotNull
     private User user;
 
-    @ManyToMany(mappedBy = "blocks")
+    @OneToMany(mappedBy = "parent")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnoreProperties(value = { "user", "book", "blocks" }, allowSetters = true)
-    private Set<Flow> flows = new HashSet<>();
+    @JsonIgnoreProperties(value = { "parent", "user", "parentBlocks", "flows" }, allowSetters = true)
+    private Set<Block> parentBlocks = new HashSet<>();
+
+    @OneToMany(mappedBy = "block")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "flow", "block" }, allowSetters = true)
+    private Set<FlowBlock> flows = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
     public Long getId() {
@@ -150,35 +155,66 @@ public class Block implements Serializable {
         this.user = user;
     }
 
-    public Set<Flow> getFlows() {
+    public Set<Block> getParentBlocks() {
+        return this.parentBlocks;
+    }
+
+    public Block parentBlocks(Set<Block> blocks) {
+        this.setParentBlocks(blocks);
+        return this;
+    }
+
+    public Block addParentBlocks(Block block) {
+        this.parentBlocks.add(block);
+        block.setParent(this);
+        return this;
+    }
+
+    public Block removeParentBlocks(Block block) {
+        this.parentBlocks.remove(block);
+        block.setParent(null);
+        return this;
+    }
+
+    public void setParentBlocks(Set<Block> blocks) {
+        if (this.parentBlocks != null) {
+            this.parentBlocks.forEach(i -> i.setParent(null));
+        }
+        if (blocks != null) {
+            blocks.forEach(i -> i.setParent(this));
+        }
+        this.parentBlocks = blocks;
+    }
+
+    public Set<FlowBlock> getFlows() {
         return this.flows;
     }
 
-    public Block flows(Set<Flow> flows) {
-        this.setFlows(flows);
+    public Block flows(Set<FlowBlock> flowBlocks) {
+        this.setFlows(flowBlocks);
         return this;
     }
 
-    public Block addFlows(Flow flow) {
-        this.flows.add(flow);
-        flow.getBlocks().add(this);
+    public Block addFlows(FlowBlock flowBlock) {
+        this.flows.add(flowBlock);
+        flowBlock.setBlock(this);
         return this;
     }
 
-    public Block removeFlows(Flow flow) {
-        this.flows.remove(flow);
-        flow.getBlocks().remove(this);
+    public Block removeFlows(FlowBlock flowBlock) {
+        this.flows.remove(flowBlock);
+        flowBlock.setBlock(null);
         return this;
     }
 
-    public void setFlows(Set<Flow> flows) {
+    public void setFlows(Set<FlowBlock> flowBlocks) {
         if (this.flows != null) {
-            this.flows.forEach(i -> i.removeBlocks(this));
+            this.flows.forEach(i -> i.setBlock(null));
         }
-        if (flows != null) {
-            flows.forEach(i -> i.addBlocks(this));
+        if (flowBlocks != null) {
+            flowBlocks.forEach(i -> i.setBlock(this));
         }
-        this.flows = flows;
+        this.flows = flowBlocks;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

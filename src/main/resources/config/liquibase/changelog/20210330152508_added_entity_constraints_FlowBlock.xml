@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    <!--
+        Added the constraints for entity FlowBlock.
+    -->
+    <changeSet id="20210330152508-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="flow_id"
+                                 baseTableName="flow_block"
+                                 constraintName="fk_flow_block__flow_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="flow"/>
+
+        <addForeignKeyConstraint baseColumnNames="block_id"
+                                 baseTableName="flow_block"
+                                 constraintName="fk_flow_block__block_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="block"/>
+    </changeSet>
+</databaseChangeLog>

@@ -24,6 +24,10 @@ import flow, {
 import book, {
   BookState
 } from 'app/entities/book/book.reducer';
+// prettier-ignore
+import flowBlock, {
+  FlowBlockState
+} from 'app/entities/flow-block/flow-block.reducer';
 /* jhipster-needle-add-reducer-import - JHipster will add reducer here */
 
 export interface IRootState {
@@ -40,6 +44,7 @@ export interface IRootState {
   readonly block: BlockState;
   readonly flow: FlowState;
   readonly book: BookState;
+  readonly flowBlock: FlowBlockState;
   /* jhipster-needle-add-reducer-type - JHipster will add reducer type here */
   readonly loadingBar: any;
 }
@@ -58,6 +63,7 @@ const rootReducer = combineReducers<IRootState>({
   block,
   flow,
   book,
+  flowBlock,
   /* jhipster-needle-add-reducer-combine - JHipster will add reducer here */
   loadingBar,
 });

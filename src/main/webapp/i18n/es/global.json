@@ -10,6 +10,7 @@
         "block": "Block",
         "flow": "Flow",
         "book": "Book",
+        "flowBlock": "Flow Block",
         "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)"
       },
       "account": {

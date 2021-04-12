@@ -2,7 +2,6 @@ package com.pradera.poc.service.mapper;
 
 import com.pradera.poc.domain.*;
 import com.pradera.poc.service.dto.BlockDTO;
-import java.util.Set;
 import org.mapstruct.*;
 
 /**
@@ -14,15 +13,14 @@ public interface BlockMapper extends EntityMapper<BlockDTO, Block> {
     @Mapping(target = "user", source = "user", qualifiedByName = "login")
     BlockDTO toDto(Block s);
 
+    @Named("id")
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "id", source = "id")
+    BlockDTO toDtoId(Block block);
+
     @Named("content")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
     @Mapping(target = "content", source = "content")
     BlockDTO toDtoContent(Block block);
-
-    @Named("contentSet")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "content", source = "content")
-    Set<BlockDTO> toDtoContentSet(Set<Block> block);
 }

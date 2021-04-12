@@ -1,0 +1,26 @@
+{
+  "praderaApp": {
+    "flowBlock": {
+      "home": {
+        "title": "Flow Blocks",
+        "refreshListLabel": "Refrescar lista",
+        "createLabel": "Crear nuevo Flow Block",
+        "createOrEditLabel": "Crear o editar Flow Block",
+        "notFound": "Ningún Flow Blocks encontrado"
+      },
+      "created": "Un nuevo Flow Block ha sido creado con el identificador {{ param }}",
+      "updated": "Un Flow Block ha sido actualizado con el identificador {{ param }}",
+      "deleted": "Un Flow Block ha sido eliminado con el identificador {{ param }}",
+      "delete": {
+        "question": "¿Seguro que quiere eliminar Flow Block {{ id }}?"
+      },
+      "detail": {
+        "title": "Flow Block"
+      },
+      "id": "ID",
+      "blockOrder": "Block Order",
+      "flow": "Flow",
+      "block": "Block"
+    }
+  }
+}

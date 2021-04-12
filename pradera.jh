@@ -67,7 +67,7 @@ relationship ManyToOne {
   FlowBlock{block} to Block{flows},
 }
 
-dto Block, Flow, Book, FlowBlock with mapstruct
+
 paginate Block, Flow, Book, FlowBlock with pagination
 service Block, Flow, Book, FlowBlock with serviceClass
 filter Block, Flow, Book, FlowBlock

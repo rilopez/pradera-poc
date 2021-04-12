@@ -1,10 +1,10 @@
 package com.pradera.poc.web.rest;
 
+import com.pradera.poc.domain.FlowBlock;
 import com.pradera.poc.repository.FlowBlockRepository;
 import com.pradera.poc.service.FlowBlockQueryService;
 import com.pradera.poc.service.FlowBlockService;
 import com.pradera.poc.service.criteria.FlowBlockCriteria;
-import com.pradera.poc.service.dto.FlowBlockDTO;
 import com.pradera.poc.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -60,17 +60,17 @@ public class FlowBlockResource {
     /**
      * {@code POST  /flow-blocks} : Create a new flowBlock.
      *
-     * @param flowBlockDTO the flowBlockDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new flowBlockDTO, or with status {@code 400 (Bad Request)} if the flowBlock has already an ID.
+     * @param flowBlock the flowBlock to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new flowBlock, or with status {@code 400 (Bad Request)} if the flowBlock has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/flow-blocks")
-    public ResponseEntity<FlowBlockDTO> createFlowBlock(@Valid @RequestBody FlowBlockDTO flowBlockDTO) throws URISyntaxException {
-        log.debug("REST request to save FlowBlock : {}", flowBlockDTO);
-        if (flowBlockDTO.getId() != null) {
+    public ResponseEntity<FlowBlock> createFlowBlock(@Valid @RequestBody FlowBlock flowBlock) throws URISyntaxException {
+        log.debug("REST request to save FlowBlock : {}", flowBlock);
+        if (flowBlock.getId() != null) {
             throw new BadRequestAlertException("A new flowBlock cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        FlowBlockDTO result = flowBlockService.save(flowBlockDTO);
+        FlowBlock result = flowBlockService.save(flowBlock);
         return ResponseEntity
             .created(new URI("/api/flow-blocks/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
@@ -80,23 +80,23 @@ public class FlowBlockResource {
     /**
      * {@code PUT  /flow-blocks/:id} : Updates an existing flowBlock.
      *
-     * @param id the id of the flowBlockDTO to save.
-     * @param flowBlockDTO the flowBlockDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated flowBlockDTO,
-     * or with status {@code 400 (Bad Request)} if the flowBlockDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the flowBlockDTO couldn't be updated.
+     * @param id the id of the flowBlock to save.
+     * @param flowBlock the flowBlock to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated flowBlock,
+     * or with status {@code 400 (Bad Request)} if the flowBlock is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the flowBlock couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/flow-blocks/{id}")
-    public ResponseEntity<FlowBlockDTO> updateFlowBlock(
+    public ResponseEntity<FlowBlock> updateFlowBlock(
         @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody FlowBlockDTO flowBlockDTO
+        @Valid @RequestBody FlowBlock flowBlock
     ) throws URISyntaxException {
-        log.debug("REST request to update FlowBlock : {}, {}", id, flowBlockDTO);
-        if (flowBlockDTO.getId() == null) {
+        log.debug("REST request to update FlowBlock : {}, {}", id, flowBlock);
+        if (flowBlock.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, flowBlockDTO.getId())) {
+        if (!Objects.equals(id, flowBlock.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -104,34 +104,34 @@ public class FlowBlockResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        FlowBlockDTO result = flowBlockService.save(flowBlockDTO);
+        FlowBlock result = flowBlockService.save(flowBlock);
         return ResponseEntity
             .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, flowBlockDTO.getId().toString()))
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, flowBlock.getId().toString()))
             .body(result);
     }
 
     /**
      * {@code PATCH  /flow-blocks/:id} : Partial updates given fields of an existing flowBlock, field will ignore if it is null
      *
-     * @param id the id of the flowBlockDTO to save.
-     * @param flowBlockDTO the flowBlockDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated flowBlockDTO,
-     * or with status {@code 400 (Bad Request)} if the flowBlockDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the flowBlockDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the flowBlockDTO couldn't be updated.
+     * @param id the id of the flowBlock to save.
+     * @param flowBlock the flowBlock to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated flowBlock,
+     * or with status {@code 400 (Bad Request)} if the flowBlock is not valid,
+     * or with status {@code 404 (Not Found)} if the flowBlock is not found,
+     * or with status {@code 500 (Internal Server Error)} if the flowBlock couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/flow-blocks/{id}", consumes = "application/merge-patch+json")
-    public ResponseEntity<FlowBlockDTO> partialUpdateFlowBlock(
+    public ResponseEntity<FlowBlock> partialUpdateFlowBlock(
         @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody FlowBlockDTO flowBlockDTO
+        @NotNull @RequestBody FlowBlock flowBlock
     ) throws URISyntaxException {
-        log.debug("REST request to partial update FlowBlock partially : {}, {}", id, flowBlockDTO);
-        if (flowBlockDTO.getId() == null) {
+        log.debug("REST request to partial update FlowBlock partially : {}, {}", id, flowBlock);
+        if (flowBlock.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, flowBlockDTO.getId())) {
+        if (!Objects.equals(id, flowBlock.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -139,11 +139,11 @@ public class FlowBlockResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<FlowBlockDTO> result = flowBlockService.partialUpdate(flowBlockDTO);
+        Optional<FlowBlock> result = flowBlockService.partialUpdate(flowBlock);
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, flowBlockDTO.getId().toString())
+            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, flowBlock.getId().toString())
         );
     }
 
@@ -155,9 +155,9 @@ public class FlowBlockResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of flowBlocks in body.
      */
     @GetMapping("/flow-blocks")
-    public ResponseEntity<List<FlowBlockDTO>> getAllFlowBlocks(FlowBlockCriteria criteria, Pageable pageable) {
+    public ResponseEntity<List<FlowBlock>> getAllFlowBlocks(FlowBlockCriteria criteria, Pageable pageable) {
         log.debug("REST request to get FlowBlocks by criteria: {}", criteria);
-        Page<FlowBlockDTO> page = flowBlockQueryService.findByCriteria(criteria, pageable);
+        Page<FlowBlock> page = flowBlockQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -177,20 +177,20 @@ public class FlowBlockResource {
     /**
      * {@code GET  /flow-blocks/:id} : get the "id" flowBlock.
      *
-     * @param id the id of the flowBlockDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the flowBlockDTO, or with status {@code 404 (Not Found)}.
+     * @param id the id of the flowBlock to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the flowBlock, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/flow-blocks/{id}")
-    public ResponseEntity<FlowBlockDTO> getFlowBlock(@PathVariable Long id) {
+    public ResponseEntity<FlowBlock> getFlowBlock(@PathVariable Long id) {
         log.debug("REST request to get FlowBlock : {}", id);
-        Optional<FlowBlockDTO> flowBlockDTO = flowBlockService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(flowBlockDTO);
+        Optional<FlowBlock> flowBlock = flowBlockService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(flowBlock);
     }
 
     /**
      * {@code DELETE  /flow-blocks/:id} : delete the "id" flowBlock.
      *
-     * @param id the id of the flowBlockDTO to delete.
+     * @param id the id of the flowBlock to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/flow-blocks/{id}")

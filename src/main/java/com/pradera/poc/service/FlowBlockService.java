@@ -2,8 +2,6 @@ package com.pradera.poc.service;
 
 import com.pradera.poc.domain.FlowBlock;
 import com.pradera.poc.repository.FlowBlockRepository;
-import com.pradera.poc.service.dto.FlowBlockDTO;
-import com.pradera.poc.service.mapper.FlowBlockMapper;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,45 +21,42 @@ public class FlowBlockService {
 
     private final FlowBlockRepository flowBlockRepository;
 
-    private final FlowBlockMapper flowBlockMapper;
-
-    public FlowBlockService(FlowBlockRepository flowBlockRepository, FlowBlockMapper flowBlockMapper) {
+    public FlowBlockService(FlowBlockRepository flowBlockRepository) {
         this.flowBlockRepository = flowBlockRepository;
-        this.flowBlockMapper = flowBlockMapper;
     }
 
     /**
      * Save a flowBlock.
      *
-     * @param flowBlockDTO the entity to save.
+     * @param flowBlock the entity to save.
      * @return the persisted entity.
      */
-    public FlowBlockDTO save(FlowBlockDTO flowBlockDTO) {
-        log.debug("Request to save FlowBlock : {}", flowBlockDTO);
-        FlowBlock flowBlock = flowBlockMapper.toEntity(flowBlockDTO);
-        flowBlock = flowBlockRepository.save(flowBlock);
-        return flowBlockMapper.toDto(flowBlock);
+    public FlowBlock save(FlowBlock flowBlock) {
+        log.debug("Request to save FlowBlock : {}", flowBlock);
+        return flowBlockRepository.save(flowBlock);
     }
 
     /**
      * Partially update a flowBlock.
      *
-     * @param flowBlockDTO the entity to update partially.
+     * @param flowBlock the entity to update partially.
      * @return the persisted entity.
      */
-    public Optional<FlowBlockDTO> partialUpdate(FlowBlockDTO flowBlockDTO) {
-        log.debug("Request to partially update FlowBlock : {}", flowBlockDTO);
+    public Optional<FlowBlock> partialUpdate(FlowBlock flowBlock) {
+        log.debug("Request to partially update FlowBlock : {}", flowBlock);
 
         return flowBlockRepository
-            .findById(flowBlockDTO.getId())
+            .findById(flowBlock.getId())
             .map(
                 existingFlowBlock -> {
-                    flowBlockMapper.partialUpdate(existingFlowBlock, flowBlockDTO);
+                    if (flowBlock.getBlockOrder() != null) {
+                        existingFlowBlock.setBlockOrder(flowBlock.getBlockOrder());
+                    }
+
                     return existingFlowBlock;
                 }
             )
-            .map(flowBlockRepository::save)
-            .map(flowBlockMapper::toDto);
+            .map(flowBlockRepository::save);
     }
 
     /**
@@ -71,9 +66,9 @@ public class FlowBlockService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Page<FlowBlockDTO> findAll(Pageable pageable) {
+    public Page<FlowBlock> findAll(Pageable pageable) {
         log.debug("Request to get all FlowBlocks");
-        return flowBlockRepository.findAll(pageable).map(flowBlockMapper::toDto);
+        return flowBlockRepository.findAll(pageable);
     }
 
     /**
@@ -83,9 +78,9 @@ public class FlowBlockService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Optional<FlowBlockDTO> findOne(Long id) {
+    public Optional<FlowBlock> findOne(Long id) {
         log.debug("Request to get FlowBlock : {}", id);
-        return flowBlockRepository.findById(id).map(flowBlockMapper::toDto);
+        return flowBlockRepository.findById(id);
     }
 
     /**

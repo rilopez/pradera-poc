@@ -4,8 +4,6 @@ import com.pradera.poc.domain.*; // for static metamodels
 import com.pradera.poc.domain.Flow;
 import com.pradera.poc.repository.FlowRepository;
 import com.pradera.poc.service.criteria.FlowCriteria;
-import com.pradera.poc.service.dto.FlowDTO;
-import com.pradera.poc.service.mapper.FlowMapper;
 import java.util.List;
 import javax.persistence.criteria.JoinType;
 import org.slf4j.Logger;
@@ -21,7 +19,7 @@ import tech.jhipster.service.QueryService;
  * Service for executing complex queries for {@link Flow} entities in the database.
  * The main input is a {@link FlowCriteria} which gets converted to {@link Specification},
  * in a way that all the filters must apply.
- * It returns a {@link List} of {@link FlowDTO} or a {@link Page} of {@link FlowDTO} which fulfills the criteria.
+ * It returns a {@link List} of {@link Flow} or a {@link Page} of {@link Flow} which fulfills the criteria.
  */
 @Service
 @Transactional(readOnly = true)
@@ -31,36 +29,33 @@ public class FlowQueryService extends QueryService<Flow> {
 
     private final FlowRepository flowRepository;
 
-    private final FlowMapper flowMapper;
-
-    public FlowQueryService(FlowRepository flowRepository, FlowMapper flowMapper) {
+    public FlowQueryService(FlowRepository flowRepository) {
         this.flowRepository = flowRepository;
-        this.flowMapper = flowMapper;
     }
 
     /**
-     * Return a {@link List} of {@link FlowDTO} which matches the criteria from the database.
+     * Return a {@link List} of {@link Flow} which matches the criteria from the database.
      * @param criteria The object which holds all the filters, which the entities should match.
      * @return the matching entities.
      */
     @Transactional(readOnly = true)
-    public List<FlowDTO> findByCriteria(FlowCriteria criteria) {
+    public List<Flow> findByCriteria(FlowCriteria criteria) {
         log.debug("find by criteria : {}", criteria);
         final Specification<Flow> specification = createSpecification(criteria);
-        return flowMapper.toDto(flowRepository.findAll(specification));
+        return flowRepository.findAll(specification);
     }
 
     /**
-     * Return a {@link Page} of {@link FlowDTO} which matches the criteria from the database.
+     * Return a {@link Page} of {@link Flow} which matches the criteria from the database.
      * @param criteria The object which holds all the filters, which the entities should match.
      * @param page The page, which should be returned.
      * @return the matching entities.
      */
     @Transactional(readOnly = true)
-    public Page<FlowDTO> findByCriteria(FlowCriteria criteria, Pageable page) {
+    public Page<Flow> findByCriteria(FlowCriteria criteria, Pageable page) {
         log.debug("find by criteria : {}, page: {}", criteria, page);
         final Specification<Flow> specification = createSpecification(criteria);
-        return flowRepository.findAll(specification, page).map(flowMapper::toDto);
+        return flowRepository.findAll(specification, page);
     }
 
     /**

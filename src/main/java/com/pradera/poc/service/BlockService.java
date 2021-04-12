@@ -2,8 +2,6 @@ package com.pradera.poc.service;
 
 import com.pradera.poc.domain.Block;
 import com.pradera.poc.repository.BlockRepository;
-import com.pradera.poc.service.dto.BlockDTO;
-import com.pradera.poc.service.mapper.BlockMapper;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,45 +21,51 @@ public class BlockService {
 
     private final BlockRepository blockRepository;
 
-    private final BlockMapper blockMapper;
-
-    public BlockService(BlockRepository blockRepository, BlockMapper blockMapper) {
+    public BlockService(BlockRepository blockRepository) {
         this.blockRepository = blockRepository;
-        this.blockMapper = blockMapper;
     }
 
     /**
      * Save a block.
      *
-     * @param blockDTO the entity to save.
+     * @param block the entity to save.
      * @return the persisted entity.
      */
-    public BlockDTO save(BlockDTO blockDTO) {
-        log.debug("Request to save Block : {}", blockDTO);
-        Block block = blockMapper.toEntity(blockDTO);
-        block = blockRepository.save(block);
-        return blockMapper.toDto(block);
+    public Block save(Block block) {
+        log.debug("Request to save Block : {}", block);
+        return blockRepository.save(block);
     }
 
     /**
      * Partially update a block.
      *
-     * @param blockDTO the entity to update partially.
+     * @param block the entity to update partially.
      * @return the persisted entity.
      */
-    public Optional<BlockDTO> partialUpdate(BlockDTO blockDTO) {
-        log.debug("Request to partially update Block : {}", blockDTO);
+    public Optional<Block> partialUpdate(Block block) {
+        log.debug("Request to partially update Block : {}", block);
 
         return blockRepository
-            .findById(blockDTO.getId())
+            .findById(block.getId())
             .map(
                 existingBlock -> {
-                    blockMapper.partialUpdate(existingBlock, blockDTO);
+                    if (block.getType() != null) {
+                        existingBlock.setType(block.getType());
+                    }
+                    if (block.getContent() != null) {
+                        existingBlock.setContent(block.getContent());
+                    }
+                    if (block.getCreatedDate() != null) {
+                        existingBlock.setCreatedDate(block.getCreatedDate());
+                    }
+                    if (block.getHash() != null) {
+                        existingBlock.setHash(block.getHash());
+                    }
+
                     return existingBlock;
                 }
             )
-            .map(blockRepository::save)
-            .map(blockMapper::toDto);
+            .map(blockRepository::save);
     }
 
     /**
@@ -71,9 +75,9 @@ public class BlockService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Page<BlockDTO> findAll(Pageable pageable) {
+    public Page<Block> findAll(Pageable pageable) {
         log.debug("Request to get all Blocks");
-        return blockRepository.findAll(pageable).map(blockMapper::toDto);
+        return blockRepository.findAll(pageable);
     }
 
     /**
@@ -83,9 +87,9 @@ public class BlockService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Optional<BlockDTO> findOne(Long id) {
+    public Optional<Block> findOne(Long id) {
         log.debug("Request to get Block : {}", id);
-        return blockRepository.findById(id).map(blockMapper::toDto);
+        return blockRepository.findById(id);
     }
 
     /**

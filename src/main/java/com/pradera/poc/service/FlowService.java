@@ -2,8 +2,6 @@ package com.pradera.poc.service;
 
 import com.pradera.poc.domain.Flow;
 import com.pradera.poc.repository.FlowRepository;
-import com.pradera.poc.service.dto.FlowDTO;
-import com.pradera.poc.service.mapper.FlowMapper;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,45 +21,42 @@ public class FlowService {
 
     private final FlowRepository flowRepository;
 
-    private final FlowMapper flowMapper;
-
-    public FlowService(FlowRepository flowRepository, FlowMapper flowMapper) {
+    public FlowService(FlowRepository flowRepository) {
         this.flowRepository = flowRepository;
-        this.flowMapper = flowMapper;
     }
 
     /**
      * Save a flow.
      *
-     * @param flowDTO the entity to save.
+     * @param flow the entity to save.
      * @return the persisted entity.
      */
-    public FlowDTO save(FlowDTO flowDTO) {
-        log.debug("Request to save Flow : {}", flowDTO);
-        Flow flow = flowMapper.toEntity(flowDTO);
-        flow = flowRepository.save(flow);
-        return flowMapper.toDto(flow);
+    public Flow save(Flow flow) {
+        log.debug("Request to save Flow : {}", flow);
+        return flowRepository.save(flow);
     }
 
     /**
      * Partially update a flow.
      *
-     * @param flowDTO the entity to update partially.
+     * @param flow the entity to update partially.
      * @return the persisted entity.
      */
-    public Optional<FlowDTO> partialUpdate(FlowDTO flowDTO) {
-        log.debug("Request to partially update Flow : {}", flowDTO);
+    public Optional<Flow> partialUpdate(Flow flow) {
+        log.debug("Request to partially update Flow : {}", flow);
 
         return flowRepository
-            .findById(flowDTO.getId())
+            .findById(flow.getId())
             .map(
                 existingFlow -> {
-                    flowMapper.partialUpdate(existingFlow, flowDTO);
+                    if (flow.getName() != null) {
+                        existingFlow.setName(flow.getName());
+                    }
+
                     return existingFlow;
                 }
             )
-            .map(flowRepository::save)
-            .map(flowMapper::toDto);
+            .map(flowRepository::save);
     }
 
     /**
@@ -71,9 +66,9 @@ public class FlowService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Page<FlowDTO> findAll(Pageable pageable) {
+    public Page<Flow> findAll(Pageable pageable) {
         log.debug("Request to get all Flows");
-        return flowRepository.findAll(pageable).map(flowMapper::toDto);
+        return flowRepository.findAll(pageable);
     }
 
     /**
@@ -83,9 +78,9 @@ public class FlowService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Optional<FlowDTO> findOne(Long id) {
+    public Optional<Flow> findOne(Long id) {
         log.debug("Request to get Flow : {}", id);
-        return flowRepository.findById(id).map(flowMapper::toDto);
+        return flowRepository.findById(id);
     }
 
     /**

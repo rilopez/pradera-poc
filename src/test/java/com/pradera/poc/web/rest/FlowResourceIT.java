@@ -12,8 +12,6 @@ import com.pradera.poc.domain.FlowBlock;
 import com.pradera.poc.domain.User;
 import com.pradera.poc.repository.FlowRepository;
 import com.pradera.poc.service.criteria.FlowCriteria;
-import com.pradera.poc.service.dto.FlowDTO;
-import com.pradera.poc.service.mapper.FlowMapper;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
@@ -46,9 +44,6 @@ class FlowResourceIT {
 
     @Autowired
     private FlowRepository flowRepository;
-
-    @Autowired
-    private FlowMapper flowMapper;
 
     @Autowired
     private EntityManager em;
@@ -90,9 +85,8 @@ class FlowResourceIT {
     void createFlow() throws Exception {
         int databaseSizeBeforeCreate = flowRepository.findAll().size();
         // Create the Flow
-        FlowDTO flowDTO = flowMapper.toDto(flow);
         restFlowMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(flowDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(flow)))
             .andExpect(status().isCreated());
 
         // Validate the Flow in the database
@@ -107,13 +101,12 @@ class FlowResourceIT {
     void createFlowWithExistingId() throws Exception {
         // Create the Flow with an existing ID
         flow.setId(1L);
-        FlowDTO flowDTO = flowMapper.toDto(flow);
 
         int databaseSizeBeforeCreate = flowRepository.findAll().size();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restFlowMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(flowDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(flow)))
             .andExpect(status().isBadRequest());
 
         // Validate the Flow in the database
@@ -129,10 +122,9 @@ class FlowResourceIT {
         flow.setName(null);
 
         // Create the Flow, which fails.
-        FlowDTO flowDTO = flowMapper.toDto(flow);
 
         restFlowMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(flowDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(flow)))
             .andExpect(status().isBadRequest());
 
         List<Flow> flowList = flowRepository.findAll();
@@ -380,13 +372,12 @@ class FlowResourceIT {
         // Disconnect from session so that the updates on updatedFlow are not directly saved in db
         em.detach(updatedFlow);
         updatedFlow.name(UPDATED_NAME);
-        FlowDTO flowDTO = flowMapper.toDto(updatedFlow);
 
         restFlowMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, flowDTO.getId())
+                put(ENTITY_API_URL_ID, updatedFlow.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(flowDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(updatedFlow))
             )
             .andExpect(status().isOk());
 
@@ -403,15 +394,12 @@ class FlowResourceIT {
         int databaseSizeBeforeUpdate = flowRepository.findAll().size();
         flow.setId(count.incrementAndGet());
 
-        // Create the Flow
-        FlowDTO flowDTO = flowMapper.toDto(flow);
-
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restFlowMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, flowDTO.getId())
+                put(ENTITY_API_URL_ID, flow.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(flowDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(flow))
             )
             .andExpect(status().isBadRequest());
 
@@ -426,15 +414,12 @@ class FlowResourceIT {
         int databaseSizeBeforeUpdate = flowRepository.findAll().size();
         flow.setId(count.incrementAndGet());
 
-        // Create the Flow
-        FlowDTO flowDTO = flowMapper.toDto(flow);
-
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restFlowMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(flowDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(flow))
             )
             .andExpect(status().isBadRequest());
 
@@ -449,12 +434,9 @@ class FlowResourceIT {
         int databaseSizeBeforeUpdate = flowRepository.findAll().size();
         flow.setId(count.incrementAndGet());
 
-        // Create the Flow
-        FlowDTO flowDTO = flowMapper.toDto(flow);
-
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restFlowMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(flowDTO)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(flow)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Flow in the database
@@ -526,15 +508,12 @@ class FlowResourceIT {
         int databaseSizeBeforeUpdate = flowRepository.findAll().size();
         flow.setId(count.incrementAndGet());
 
-        // Create the Flow
-        FlowDTO flowDTO = flowMapper.toDto(flow);
-
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restFlowMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, flowDTO.getId())
+                patch(ENTITY_API_URL_ID, flow.getId())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(flowDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(flow))
             )
             .andExpect(status().isBadRequest());
 
@@ -549,15 +528,12 @@ class FlowResourceIT {
         int databaseSizeBeforeUpdate = flowRepository.findAll().size();
         flow.setId(count.incrementAndGet());
 
-        // Create the Flow
-        FlowDTO flowDTO = flowMapper.toDto(flow);
-
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restFlowMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(flowDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(flow))
             )
             .andExpect(status().isBadRequest());
 
@@ -572,12 +548,9 @@ class FlowResourceIT {
         int databaseSizeBeforeUpdate = flowRepository.findAll().size();
         flow.setId(count.incrementAndGet());
 
-        // Create the Flow
-        FlowDTO flowDTO = flowMapper.toDto(flow);
-
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restFlowMockMvc
-            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(flowDTO)))
+            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(flow)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Flow in the database

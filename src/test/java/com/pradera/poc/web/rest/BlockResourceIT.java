@@ -14,8 +14,6 @@ import com.pradera.poc.domain.User;
 import com.pradera.poc.domain.enumeration.BlockType;
 import com.pradera.poc.repository.BlockRepository;
 import com.pradera.poc.service.criteria.BlockCriteria;
-import com.pradera.poc.service.dto.BlockDTO;
-import com.pradera.poc.service.mapper.BlockMapper;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -63,9 +61,6 @@ class BlockResourceIT {
 
     @Autowired
     private BlockRepository blockRepository;
-
-    @Autowired
-    private BlockMapper blockMapper;
 
     @Autowired
     private EntityManager em;
@@ -117,9 +112,8 @@ class BlockResourceIT {
     void createBlock() throws Exception {
         int databaseSizeBeforeCreate = blockRepository.findAll().size();
         // Create the Block
-        BlockDTO blockDTO = blockMapper.toDto(block);
         restBlockMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(blockDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(block)))
             .andExpect(status().isCreated());
 
         // Validate the Block in the database
@@ -137,13 +131,12 @@ class BlockResourceIT {
     void createBlockWithExistingId() throws Exception {
         // Create the Block with an existing ID
         block.setId(1L);
-        BlockDTO blockDTO = blockMapper.toDto(block);
 
         int databaseSizeBeforeCreate = blockRepository.findAll().size();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restBlockMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(blockDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(block)))
             .andExpect(status().isBadRequest());
 
         // Validate the Block in the database
@@ -159,10 +152,9 @@ class BlockResourceIT {
         block.setType(null);
 
         // Create the Block, which fails.
-        BlockDTO blockDTO = blockMapper.toDto(block);
 
         restBlockMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(blockDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(block)))
             .andExpect(status().isBadRequest());
 
         List<Block> blockList = blockRepository.findAll();
@@ -177,10 +169,9 @@ class BlockResourceIT {
         block.setCreatedDate(null);
 
         // Create the Block, which fails.
-        BlockDTO blockDTO = blockMapper.toDto(block);
 
         restBlockMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(blockDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(block)))
             .andExpect(status().isBadRequest());
 
         List<Block> blockList = blockRepository.findAll();
@@ -195,10 +186,9 @@ class BlockResourceIT {
         block.setHash(null);
 
         // Create the Block, which fails.
-        BlockDTO blockDTO = blockMapper.toDto(block);
 
         restBlockMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(blockDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(block)))
             .andExpect(status().isBadRequest());
 
         List<Block> blockList = blockRepository.findAll();
@@ -630,13 +620,12 @@ class BlockResourceIT {
         // Disconnect from session so that the updates on updatedBlock are not directly saved in db
         em.detach(updatedBlock);
         updatedBlock.type(UPDATED_TYPE).content(UPDATED_CONTENT).createdDate(UPDATED_CREATED_DATE).hash(UPDATED_HASH);
-        BlockDTO blockDTO = blockMapper.toDto(updatedBlock);
 
         restBlockMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, blockDTO.getId())
+                put(ENTITY_API_URL_ID, updatedBlock.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(blockDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(updatedBlock))
             )
             .andExpect(status().isOk());
 
@@ -656,15 +645,12 @@ class BlockResourceIT {
         int databaseSizeBeforeUpdate = blockRepository.findAll().size();
         block.setId(count.incrementAndGet());
 
-        // Create the Block
-        BlockDTO blockDTO = blockMapper.toDto(block);
-
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restBlockMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, blockDTO.getId())
+                put(ENTITY_API_URL_ID, block.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(blockDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(block))
             )
             .andExpect(status().isBadRequest());
 
@@ -679,15 +665,12 @@ class BlockResourceIT {
         int databaseSizeBeforeUpdate = blockRepository.findAll().size();
         block.setId(count.incrementAndGet());
 
-        // Create the Block
-        BlockDTO blockDTO = blockMapper.toDto(block);
-
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restBlockMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(blockDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(block))
             )
             .andExpect(status().isBadRequest());
 
@@ -702,12 +685,9 @@ class BlockResourceIT {
         int databaseSizeBeforeUpdate = blockRepository.findAll().size();
         block.setId(count.incrementAndGet());
 
-        // Create the Block
-        BlockDTO blockDTO = blockMapper.toDto(block);
-
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restBlockMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(blockDTO)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(block)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Block in the database
@@ -785,15 +765,12 @@ class BlockResourceIT {
         int databaseSizeBeforeUpdate = blockRepository.findAll().size();
         block.setId(count.incrementAndGet());
 
-        // Create the Block
-        BlockDTO blockDTO = blockMapper.toDto(block);
-
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restBlockMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, blockDTO.getId())
+                patch(ENTITY_API_URL_ID, block.getId())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(blockDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(block))
             )
             .andExpect(status().isBadRequest());
 
@@ -808,15 +785,12 @@ class BlockResourceIT {
         int databaseSizeBeforeUpdate = blockRepository.findAll().size();
         block.setId(count.incrementAndGet());
 
-        // Create the Block
-        BlockDTO blockDTO = blockMapper.toDto(block);
-
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restBlockMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(blockDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(block))
             )
             .andExpect(status().isBadRequest());
 
@@ -831,12 +805,9 @@ class BlockResourceIT {
         int databaseSizeBeforeUpdate = blockRepository.findAll().size();
         block.setId(count.incrementAndGet());
 
-        // Create the Block
-        BlockDTO blockDTO = blockMapper.toDto(block);
-
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restBlockMockMvc
-            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(blockDTO)))
+            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(block)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Block in the database

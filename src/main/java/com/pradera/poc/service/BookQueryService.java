@@ -4,8 +4,6 @@ import com.pradera.poc.domain.*; // for static metamodels
 import com.pradera.poc.domain.Book;
 import com.pradera.poc.repository.BookRepository;
 import com.pradera.poc.service.criteria.BookCriteria;
-import com.pradera.poc.service.dto.BookDTO;
-import com.pradera.poc.service.mapper.BookMapper;
 import java.util.List;
 import javax.persistence.criteria.JoinType;
 import org.slf4j.Logger;
@@ -21,7 +19,7 @@ import tech.jhipster.service.QueryService;
  * Service for executing complex queries for {@link Book} entities in the database.
  * The main input is a {@link BookCriteria} which gets converted to {@link Specification},
  * in a way that all the filters must apply.
- * It returns a {@link List} of {@link BookDTO} or a {@link Page} of {@link BookDTO} which fulfills the criteria.
+ * It returns a {@link List} of {@link Book} or a {@link Page} of {@link Book} which fulfills the criteria.
  */
 @Service
 @Transactional(readOnly = true)
@@ -31,36 +29,33 @@ public class BookQueryService extends QueryService<Book> {
 
     private final BookRepository bookRepository;
 
-    private final BookMapper bookMapper;
-
-    public BookQueryService(BookRepository bookRepository, BookMapper bookMapper) {
+    public BookQueryService(BookRepository bookRepository) {
         this.bookRepository = bookRepository;
-        this.bookMapper = bookMapper;
     }
 
     /**
-     * Return a {@link List} of {@link BookDTO} which matches the criteria from the database.
+     * Return a {@link List} of {@link Book} which matches the criteria from the database.
      * @param criteria The object which holds all the filters, which the entities should match.
      * @return the matching entities.
      */
     @Transactional(readOnly = true)
-    public List<BookDTO> findByCriteria(BookCriteria criteria) {
+    public List<Book> findByCriteria(BookCriteria criteria) {
         log.debug("find by criteria : {}", criteria);
         final Specification<Book> specification = createSpecification(criteria);
-        return bookMapper.toDto(bookRepository.findAll(specification));
+        return bookRepository.findAll(specification);
     }
 
     /**
-     * Return a {@link Page} of {@link BookDTO} which matches the criteria from the database.
+     * Return a {@link Page} of {@link Book} which matches the criteria from the database.
      * @param criteria The object which holds all the filters, which the entities should match.
      * @param page The page, which should be returned.
      * @return the matching entities.
      */
     @Transactional(readOnly = true)
-    public Page<BookDTO> findByCriteria(BookCriteria criteria, Pageable page) {
+    public Page<Book> findByCriteria(BookCriteria criteria, Pageable page) {
         log.debug("find by criteria : {}, page: {}", criteria, page);
         final Specification<Book> specification = createSpecification(criteria);
-        return bookRepository.findAll(specification, page).map(bookMapper::toDto);
+        return bookRepository.findAll(specification, page);
     }
 
     /**

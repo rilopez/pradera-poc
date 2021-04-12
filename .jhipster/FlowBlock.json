@@ -22,7 +22,7 @@
     }
   ],
   "entityTableName": "flow_block",
-  "dto": "mapstruct",
+  "dto": "no",
   "pagination": "pagination",
   "service": "serviceClass",
   "jpaMetamodelFiltering": true,

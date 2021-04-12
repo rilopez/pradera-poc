@@ -2,8 +2,6 @@ package com.pradera.poc.service;
 
 import com.pradera.poc.domain.Book;
 import com.pradera.poc.repository.BookRepository;
-import com.pradera.poc.service.dto.BookDTO;
-import com.pradera.poc.service.mapper.BookMapper;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,45 +21,42 @@ public class BookService {
 
     private final BookRepository bookRepository;
 
-    private final BookMapper bookMapper;
-
-    public BookService(BookRepository bookRepository, BookMapper bookMapper) {
+    public BookService(BookRepository bookRepository) {
         this.bookRepository = bookRepository;
-        this.bookMapper = bookMapper;
     }
 
     /**
      * Save a book.
      *
-     * @param bookDTO the entity to save.
+     * @param book the entity to save.
      * @return the persisted entity.
      */
-    public BookDTO save(BookDTO bookDTO) {
-        log.debug("Request to save Book : {}", bookDTO);
-        Book book = bookMapper.toEntity(bookDTO);
-        book = bookRepository.save(book);
-        return bookMapper.toDto(book);
+    public Book save(Book book) {
+        log.debug("Request to save Book : {}", book);
+        return bookRepository.save(book);
     }
 
     /**
      * Partially update a book.
      *
-     * @param bookDTO the entity to update partially.
+     * @param book the entity to update partially.
      * @return the persisted entity.
      */
-    public Optional<BookDTO> partialUpdate(BookDTO bookDTO) {
-        log.debug("Request to partially update Book : {}", bookDTO);
+    public Optional<Book> partialUpdate(Book book) {
+        log.debug("Request to partially update Book : {}", book);
 
         return bookRepository
-            .findById(bookDTO.getId())
+            .findById(book.getId())
             .map(
                 existingBook -> {
-                    bookMapper.partialUpdate(existingBook, bookDTO);
+                    if (book.getTitle() != null) {
+                        existingBook.setTitle(book.getTitle());
+                    }
+
                     return existingBook;
                 }
             )
-            .map(bookRepository::save)
-            .map(bookMapper::toDto);
+            .map(bookRepository::save);
     }
 
     /**
@@ -71,9 +66,9 @@ public class BookService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Page<BookDTO> findAll(Pageable pageable) {
+    public Page<Book> findAll(Pageable pageable) {
         log.debug("Request to get all Books");
-        return bookRepository.findAll(pageable).map(bookMapper::toDto);
+        return bookRepository.findAll(pageable);
     }
 
     /**
@@ -83,9 +78,9 @@ public class BookService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Optional<BookDTO> findOne(Long id) {
+    public Optional<Book> findOne(Long id) {
         log.debug("Request to get Book : {}", id);
-        return bookRepository.findById(id).map(bookMapper::toDto);
+        return bookRepository.findById(id);
     }
 
     /**

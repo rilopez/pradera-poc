@@ -11,8 +11,6 @@ import com.pradera.poc.domain.Flow;
 import com.pradera.poc.domain.FlowBlock;
 import com.pradera.poc.repository.FlowBlockRepository;
 import com.pradera.poc.service.criteria.FlowBlockCriteria;
-import com.pradera.poc.service.dto.FlowBlockDTO;
-import com.pradera.poc.service.mapper.FlowBlockMapper;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
@@ -46,9 +44,6 @@ class FlowBlockResourceIT {
 
     @Autowired
     private FlowBlockRepository flowBlockRepository;
-
-    @Autowired
-    private FlowBlockMapper flowBlockMapper;
 
     @Autowired
     private EntityManager em;
@@ -90,9 +85,8 @@ class FlowBlockResourceIT {
     void createFlowBlock() throws Exception {
         int databaseSizeBeforeCreate = flowBlockRepository.findAll().size();
         // Create the FlowBlock
-        FlowBlockDTO flowBlockDTO = flowBlockMapper.toDto(flowBlock);
         restFlowBlockMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(flowBlockDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(flowBlock)))
             .andExpect(status().isCreated());
 
         // Validate the FlowBlock in the database
@@ -107,13 +101,12 @@ class FlowBlockResourceIT {
     void createFlowBlockWithExistingId() throws Exception {
         // Create the FlowBlock with an existing ID
         flowBlock.setId(1L);
-        FlowBlockDTO flowBlockDTO = flowBlockMapper.toDto(flowBlock);
 
         int databaseSizeBeforeCreate = flowBlockRepository.findAll().size();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restFlowBlockMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(flowBlockDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(flowBlock)))
             .andExpect(status().isBadRequest());
 
         // Validate the FlowBlock in the database
@@ -129,10 +122,9 @@ class FlowBlockResourceIT {
         flowBlock.setBlockOrder(null);
 
         // Create the FlowBlock, which fails.
-        FlowBlockDTO flowBlockDTO = flowBlockMapper.toDto(flowBlock);
 
         restFlowBlockMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(flowBlockDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(flowBlock)))
             .andExpect(status().isBadRequest());
 
         List<FlowBlock> flowBlockList = flowBlockRepository.findAll();
@@ -387,13 +379,12 @@ class FlowBlockResourceIT {
         // Disconnect from session so that the updates on updatedFlowBlock are not directly saved in db
         em.detach(updatedFlowBlock);
         updatedFlowBlock.blockOrder(UPDATED_BLOCK_ORDER);
-        FlowBlockDTO flowBlockDTO = flowBlockMapper.toDto(updatedFlowBlock);
 
         restFlowBlockMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, flowBlockDTO.getId())
+                put(ENTITY_API_URL_ID, updatedFlowBlock.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(flowBlockDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(updatedFlowBlock))
             )
             .andExpect(status().isOk());
 
@@ -410,15 +401,12 @@ class FlowBlockResourceIT {
         int databaseSizeBeforeUpdate = flowBlockRepository.findAll().size();
         flowBlock.setId(count.incrementAndGet());
 
-        // Create the FlowBlock
-        FlowBlockDTO flowBlockDTO = flowBlockMapper.toDto(flowBlock);
-
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restFlowBlockMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, flowBlockDTO.getId())
+                put(ENTITY_API_URL_ID, flowBlock.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(flowBlockDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(flowBlock))
             )
             .andExpect(status().isBadRequest());
 
@@ -433,15 +421,12 @@ class FlowBlockResourceIT {
         int databaseSizeBeforeUpdate = flowBlockRepository.findAll().size();
         flowBlock.setId(count.incrementAndGet());
 
-        // Create the FlowBlock
-        FlowBlockDTO flowBlockDTO = flowBlockMapper.toDto(flowBlock);
-
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restFlowBlockMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(flowBlockDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(flowBlock))
             )
             .andExpect(status().isBadRequest());
 
@@ -456,12 +441,9 @@ class FlowBlockResourceIT {
         int databaseSizeBeforeUpdate = flowBlockRepository.findAll().size();
         flowBlock.setId(count.incrementAndGet());
 
-        // Create the FlowBlock
-        FlowBlockDTO flowBlockDTO = flowBlockMapper.toDto(flowBlock);
-
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restFlowBlockMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(flowBlockDTO)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(flowBlock)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the FlowBlock in the database
@@ -531,15 +513,12 @@ class FlowBlockResourceIT {
         int databaseSizeBeforeUpdate = flowBlockRepository.findAll().size();
         flowBlock.setId(count.incrementAndGet());
 
-        // Create the FlowBlock
-        FlowBlockDTO flowBlockDTO = flowBlockMapper.toDto(flowBlock);
-
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restFlowBlockMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, flowBlockDTO.getId())
+                patch(ENTITY_API_URL_ID, flowBlock.getId())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(flowBlockDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(flowBlock))
             )
             .andExpect(status().isBadRequest());
 
@@ -554,15 +533,12 @@ class FlowBlockResourceIT {
         int databaseSizeBeforeUpdate = flowBlockRepository.findAll().size();
         flowBlock.setId(count.incrementAndGet());
 
-        // Create the FlowBlock
-        FlowBlockDTO flowBlockDTO = flowBlockMapper.toDto(flowBlock);
-
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restFlowBlockMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(flowBlockDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(flowBlock))
             )
             .andExpect(status().isBadRequest());
 
@@ -577,13 +553,10 @@ class FlowBlockResourceIT {
         int databaseSizeBeforeUpdate = flowBlockRepository.findAll().size();
         flowBlock.setId(count.incrementAndGet());
 
-        // Create the FlowBlock
-        FlowBlockDTO flowBlockDTO = flowBlockMapper.toDto(flowBlock);
-
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restFlowBlockMockMvc
             .perform(
-                patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(flowBlockDTO))
+                patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(flowBlock))
             )
             .andExpect(status().isMethodNotAllowed());
 

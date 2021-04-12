@@ -31,7 +31,7 @@
     }
   ],
   "entityTableName": "flow",
-  "dto": "mapstruct",
+  "dto": "no",
   "pagination": "pagination",
   "service": "serviceClass",
   "jpaMetamodelFiltering": true,

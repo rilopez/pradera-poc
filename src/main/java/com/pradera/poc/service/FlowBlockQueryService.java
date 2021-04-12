@@ -4,8 +4,6 @@ import com.pradera.poc.domain.*; // for static metamodels
 import com.pradera.poc.domain.FlowBlock;
 import com.pradera.poc.repository.FlowBlockRepository;
 import com.pradera.poc.service.criteria.FlowBlockCriteria;
-import com.pradera.poc.service.dto.FlowBlockDTO;
-import com.pradera.poc.service.mapper.FlowBlockMapper;
 import java.util.List;
 import javax.persistence.criteria.JoinType;
 import org.slf4j.Logger;
@@ -21,7 +19,7 @@ import tech.jhipster.service.QueryService;
  * Service for executing complex queries for {@link FlowBlock} entities in the database.
  * The main input is a {@link FlowBlockCriteria} which gets converted to {@link Specification},
  * in a way that all the filters must apply.
- * It returns a {@link List} of {@link FlowBlockDTO} or a {@link Page} of {@link FlowBlockDTO} which fulfills the criteria.
+ * It returns a {@link List} of {@link FlowBlock} or a {@link Page} of {@link FlowBlock} which fulfills the criteria.
  */
 @Service
 @Transactional(readOnly = true)
@@ -31,36 +29,33 @@ public class FlowBlockQueryService extends QueryService<FlowBlock> {
 
     private final FlowBlockRepository flowBlockRepository;
 
-    private final FlowBlockMapper flowBlockMapper;
-
-    public FlowBlockQueryService(FlowBlockRepository flowBlockRepository, FlowBlockMapper flowBlockMapper) {
+    public FlowBlockQueryService(FlowBlockRepository flowBlockRepository) {
         this.flowBlockRepository = flowBlockRepository;
-        this.flowBlockMapper = flowBlockMapper;
     }
 
     /**
-     * Return a {@link List} of {@link FlowBlockDTO} which matches the criteria from the database.
+     * Return a {@link List} of {@link FlowBlock} which matches the criteria from the database.
      * @param criteria The object which holds all the filters, which the entities should match.
      * @return the matching entities.
      */
     @Transactional(readOnly = true)
-    public List<FlowBlockDTO> findByCriteria(FlowBlockCriteria criteria) {
+    public List<FlowBlock> findByCriteria(FlowBlockCriteria criteria) {
         log.debug("find by criteria : {}", criteria);
         final Specification<FlowBlock> specification = createSpecification(criteria);
-        return flowBlockMapper.toDto(flowBlockRepository.findAll(specification));
+        return flowBlockRepository.findAll(specification);
     }
 
     /**
-     * Return a {@link Page} of {@link FlowBlockDTO} which matches the criteria from the database.
+     * Return a {@link Page} of {@link FlowBlock} which matches the criteria from the database.
      * @param criteria The object which holds all the filters, which the entities should match.
      * @param page The page, which should be returned.
      * @return the matching entities.
      */
     @Transactional(readOnly = true)
-    public Page<FlowBlockDTO> findByCriteria(FlowBlockCriteria criteria, Pageable page) {
+    public Page<FlowBlock> findByCriteria(FlowBlockCriteria criteria, Pageable page) {
         log.debug("find by criteria : {}, page: {}", criteria, page);
         final Specification<FlowBlock> specification = createSpecification(criteria);
-        return flowBlockRepository.findAll(specification, page).map(flowBlockMapper::toDto);
+        return flowBlockRepository.findAll(specification, page);
     }
 
     /**

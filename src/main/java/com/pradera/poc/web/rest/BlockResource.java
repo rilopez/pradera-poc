@@ -1,10 +1,10 @@
 package com.pradera.poc.web.rest;
 
+import com.pradera.poc.domain.Block;
 import com.pradera.poc.repository.BlockRepository;
 import com.pradera.poc.service.BlockQueryService;
 import com.pradera.poc.service.BlockService;
 import com.pradera.poc.service.criteria.BlockCriteria;
-import com.pradera.poc.service.dto.BlockDTO;
 import com.pradera.poc.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -56,17 +56,17 @@ public class BlockResource {
     /**
      * {@code POST  /blocks} : Create a new block.
      *
-     * @param blockDTO the blockDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new blockDTO, or with status {@code 400 (Bad Request)} if the block has already an ID.
+     * @param block the block to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new block, or with status {@code 400 (Bad Request)} if the block has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/blocks")
-    public ResponseEntity<BlockDTO> createBlock(@Valid @RequestBody BlockDTO blockDTO) throws URISyntaxException {
-        log.debug("REST request to save Block : {}", blockDTO);
-        if (blockDTO.getId() != null) {
+    public ResponseEntity<Block> createBlock(@Valid @RequestBody Block block) throws URISyntaxException {
+        log.debug("REST request to save Block : {}", block);
+        if (block.getId() != null) {
             throw new BadRequestAlertException("A new block cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        BlockDTO result = blockService.save(blockDTO);
+        Block result = blockService.save(block);
         return ResponseEntity
             .created(new URI("/api/blocks/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
@@ -76,23 +76,21 @@ public class BlockResource {
     /**
      * {@code PUT  /blocks/:id} : Updates an existing block.
      *
-     * @param id the id of the blockDTO to save.
-     * @param blockDTO the blockDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated blockDTO,
-     * or with status {@code 400 (Bad Request)} if the blockDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the blockDTO couldn't be updated.
+     * @param id the id of the block to save.
+     * @param block the block to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated block,
+     * or with status {@code 400 (Bad Request)} if the block is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the block couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/blocks/{id}")
-    public ResponseEntity<BlockDTO> updateBlock(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody BlockDTO blockDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to update Block : {}, {}", id, blockDTO);
-        if (blockDTO.getId() == null) {
+    public ResponseEntity<Block> updateBlock(@PathVariable(value = "id", required = false) final Long id, @Valid @RequestBody Block block)
+        throws URISyntaxException {
+        log.debug("REST request to update Block : {}, {}", id, block);
+        if (block.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, blockDTO.getId())) {
+        if (!Objects.equals(id, block.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -100,34 +98,34 @@ public class BlockResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        BlockDTO result = blockService.save(blockDTO);
+        Block result = blockService.save(block);
         return ResponseEntity
             .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, blockDTO.getId().toString()))
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, block.getId().toString()))
             .body(result);
     }
 
     /**
      * {@code PATCH  /blocks/:id} : Partial updates given fields of an existing block, field will ignore if it is null
      *
-     * @param id the id of the blockDTO to save.
-     * @param blockDTO the blockDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated blockDTO,
-     * or with status {@code 400 (Bad Request)} if the blockDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the blockDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the blockDTO couldn't be updated.
+     * @param id the id of the block to save.
+     * @param block the block to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated block,
+     * or with status {@code 400 (Bad Request)} if the block is not valid,
+     * or with status {@code 404 (Not Found)} if the block is not found,
+     * or with status {@code 500 (Internal Server Error)} if the block couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/blocks/{id}", consumes = "application/merge-patch+json")
-    public ResponseEntity<BlockDTO> partialUpdateBlock(
+    public ResponseEntity<Block> partialUpdateBlock(
         @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody BlockDTO blockDTO
+        @NotNull @RequestBody Block block
     ) throws URISyntaxException {
-        log.debug("REST request to partial update Block partially : {}, {}", id, blockDTO);
-        if (blockDTO.getId() == null) {
+        log.debug("REST request to partial update Block partially : {}, {}", id, block);
+        if (block.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, blockDTO.getId())) {
+        if (!Objects.equals(id, block.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -135,11 +133,11 @@ public class BlockResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<BlockDTO> result = blockService.partialUpdate(blockDTO);
+        Optional<Block> result = blockService.partialUpdate(block);
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, blockDTO.getId().toString())
+            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, block.getId().toString())
         );
     }
 
@@ -151,9 +149,9 @@ public class BlockResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of blocks in body.
      */
     @GetMapping("/blocks")
-    public ResponseEntity<List<BlockDTO>> getAllBlocks(BlockCriteria criteria, Pageable pageable) {
+    public ResponseEntity<List<Block>> getAllBlocks(BlockCriteria criteria, Pageable pageable) {
         log.debug("REST request to get Blocks by criteria: {}", criteria);
-        Page<BlockDTO> page = blockQueryService.findByCriteria(criteria, pageable);
+        Page<Block> page = blockQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -173,20 +171,20 @@ public class BlockResource {
     /**
      * {@code GET  /blocks/:id} : get the "id" block.
      *
-     * @param id the id of the blockDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the blockDTO, or with status {@code 404 (Not Found)}.
+     * @param id the id of the block to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the block, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/blocks/{id}")
-    public ResponseEntity<BlockDTO> getBlock(@PathVariable Long id) {
+    public ResponseEntity<Block> getBlock(@PathVariable Long id) {
         log.debug("REST request to get Block : {}", id);
-        Optional<BlockDTO> blockDTO = blockService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(blockDTO);
+        Optional<Block> block = blockService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(block);
     }
 
     /**
      * {@code DELETE  /blocks/:id} : delete the "id" block.
      *
-     * @param id the id of the blockDTO to delete.
+     * @param id the id of the block to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/blocks/{id}")

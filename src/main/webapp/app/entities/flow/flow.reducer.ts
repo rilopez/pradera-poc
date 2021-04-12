@@ -121,6 +121,8 @@ export const getEntity: ICrudGetAction<IFlow> = id => {
   };
 };
 
+//TODO add an action getEntityByUserId
+
 export const createEntity: ICrudPutAction<IFlow> = entity => async dispatch => {
   const result = await dispatch({
     type: ACTION_TYPES.CREATE_FLOW,

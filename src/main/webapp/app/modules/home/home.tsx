@@ -44,14 +44,19 @@ import {solarizedlight} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import '@bangle.dev/core/style.css';
 import '@bangle.dev/tooltip/style.css';
 import '@bangle.dev/react-menu/style.css';
+import {getEntities as getFlows} from "app/entities/flow/flow.reducer";
 
-export type IHomeProp = StateProps;
+export interface IHomeProp extends StateProps, DispatchProps{};
 
 const menuKey = new PluginKey('menuKey');
 
 export const Home = (props: IHomeProp) => {
-  const {account} = props;
+  const {account, flowList} = props;
   const [docState, setDocState] = useState(null)
+
+  useEffect(() => {
+    props.getFlows();
+  }, []);
 
   const accountLogin = account.login;
   const updatePlugin = new Plugin({
@@ -157,6 +162,7 @@ export const Home = (props: IHomeProp) => {
   return (
     <Row>
       <Col md="7" className="pad">
+        <div>flowListLen: {flowList.length}</div>
         {/*TODO show flow menu */}
         <BangleEditor state={editorState}>
           <FloatingMenu menuKey={menuKey}
@@ -192,10 +198,14 @@ export const Home = (props: IHomeProp) => {
 
 
 const mapStateToProps = storeState => ({
+  flowList: storeState.flow.entities,
   account: storeState.authentication.account,
   isAuthenticated: storeState.authentication.isAuthenticated,
 });
-
+const mapDispatchToProps = {
+  getFlows, //TODO use getEntityByUserId
+};
 type StateProps = ReturnType<typeof mapStateToProps>;
+type DispatchProps = typeof mapDispatchToProps;
 
-export default connect(mapStateToProps)(Home);
+export default connect(mapStateToProps,mapDispatchToProps)(Home);

@@ -34,7 +34,7 @@ import {
   FloatingMenu,
   Menu,
   MenuGroup,
-  BoldButton,
+  ParagraphButton,
   HeadingButton,
 } from '@bangle.dev/react-menu';
 import {PluginKey} from '@bangle.dev/core';
@@ -53,9 +53,9 @@ export const Home = (props: IHomeProp) => {
   const {account} = props;
   const [docState, setDocState] = useState(null)
 
+  const accountLogin = account.login;
   const updatePlugin = new Plugin({
     view: () => ({
-
       update(view, prevState) {
         if (!view.state.doc.eq(prevState.doc)) {
           //TODO send state to database
@@ -64,8 +64,7 @@ export const Home = (props: IHomeProp) => {
       },
     })
   })
-  //TODO resolve account before setting
-  const accountLogin = account.login;
+
   const editorState = useEditorState({
     specs: [
       bold.spec(),
@@ -76,7 +75,10 @@ export const Home = (props: IHomeProp) => {
       {...paragraph.spec(),
         schema: {
           ...paragraph.spec().schema,
-          attrs: { userId: {  default: "accountLogin" } }
+          attrs: {
+            userId: {  default: account.id },
+            blockId: {default:''}
+          }
         },
       },
       blockquote.spec(),
@@ -92,8 +94,6 @@ export const Home = (props: IHomeProp) => {
     ],
     plugins: () => [
       bold.plugins(),
-
-
       link.plugins(),
       underline.plugins(),
       paragraph.plugins(),
@@ -112,13 +112,52 @@ export const Home = (props: IHomeProp) => {
         key: menuKey,
       }),
     ],
-    initialValue: 'Hello world!',
+    //TODO create CSV initial value example src/main/resources/config/liquibase/fake-data/*.csv
+    //TODO read initial value from database
+    initialValue: {
+      "type": "doc",
+      "content": [
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 1,
+            "collapseContent": null
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Hello world! "
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "nodeId": "abe46c55-2286-459f-923a-d51380eb8362"
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "los grandes rentistas"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "nodeId": "edf414bd-b199-44fb-899e-98279cad0bd3"
+          }
+        }
+      ]
+    }
   });
-  //console.log("editorState.pmState.doc", editorState.pmState.doc.toJSON())
+
+  if (!accountLogin) return (<div>no user logged</div>)
+
   return (
     <Row>
-      <Col md="3" className="pad">{account.login}</Col>
-      <Col md="9">
+      <Col md="7" className="pad">
+        {/*TODO show flow menu */}
         <BangleEditor state={editorState}>
           <FloatingMenu menuKey={menuKey}
                         renderMenuType={({type}) => {
@@ -130,7 +169,7 @@ export const Home = (props: IHomeProp) => {
                                 {/*</MenuGroup>*/}
                                 <MenuGroup>
                                   <HeadingButton level={1}/>
-                                  <HeadingButton level={2}/>
+                                  <ParagraphButton />
                                 </MenuGroup>
                               </Menu>
                             );
@@ -139,10 +178,13 @@ export const Home = (props: IHomeProp) => {
                           return null;
                         }}
           />
+        </BangleEditor>
+      </Col>
+      <Col md="5">
           <SyntaxHighlighter language="json" style={solarizedlight} showLineNumbers={true}>
             {JSON.stringify(docState, null, 1)}
           </SyntaxHighlighter>
-        </BangleEditor>
+
       </Col>
     </Row>
   );

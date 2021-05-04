@@ -43,6 +43,9 @@
     "skipCheckLengthOfIdentifier": false,
     "skipFakeData": false,
     "pages": [],
-    "lastLiquibaseTimestamp": 1617117908000
+    "lastLiquibaseTimestamp": 1617117908000,
+    "herokuAppName": "pradera-poc",
+    "herokuDeployType": "jar",
+    "herokuJavaVersion": "11"
   }
 }

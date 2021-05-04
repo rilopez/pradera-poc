@@ -1,13 +1,13 @@
 import './home.scss';
 
-import React, {useEffect, useState} from 'react';
-import {Link} from 'react-router-dom';
-import {Translate} from 'react-jhipster';
-import {connect} from 'react-redux';
-import {Row, Col, Alert} from 'reactstrap';
-import {useEditorState, BangleEditor} from '@bangle.dev/react';
-import {Plugin, SpecRegistry} from '@bangle.dev/core';
-import {superscript, subscript} from '@bangle.dev/text-formatting';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Translate } from 'react-jhipster';
+import { connect } from 'react-redux';
+import { Row, Col, Alert } from 'reactstrap';
+import { useEditorState, BangleEditor } from '@bangle.dev/react';
+import { Plugin, SpecRegistry } from '@bangle.dev/core';
+import { superscript, subscript } from '@bangle.dev/text-formatting';
 import {
   history,
   bold,
@@ -29,30 +29,23 @@ import {
   orderedList,
   image,
 } from '@bangle.dev/core/components';
-import {
-  floatingMenu,
-  FloatingMenu,
-  Menu,
-  MenuGroup,
-  ParagraphButton,
-  HeadingButton,
-} from '@bangle.dev/react-menu';
-import {PluginKey} from '@bangle.dev/core';
-import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
-import {solarizedlight} from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { floatingMenu, FloatingMenu, Menu, MenuGroup, ParagraphButton, HeadingButton } from '@bangle.dev/react-menu';
+import { PluginKey } from '@bangle.dev/core';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { solarizedlight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 import '@bangle.dev/core/style.css';
 import '@bangle.dev/tooltip/style.css';
 import '@bangle.dev/react-menu/style.css';
-import {getEntities as getFlows} from "app/entities/flow/flow.reducer";
+import { getEntities as getFlows } from 'app/entities/flow/flow.reducer';
 
-export interface IHomeProp extends StateProps, DispatchProps{};
+export interface IHomeProp extends StateProps, DispatchProps {}
 
 const menuKey = new PluginKey('menuKey');
 
 export const Home = (props: IHomeProp) => {
-  const {account, flowList} = props;
-  const [docState, setDocState] = useState(null)
+  const { account, flowList } = props;
+  const [docState, setDocState] = useState(null);
 
   useEffect(() => {
     props.getFlows();
@@ -67,8 +60,8 @@ export const Home = (props: IHomeProp) => {
           setDocState(view.state.doc.toJSON());
         }
       },
-    })
-  })
+    }),
+  });
 
   const editorState = useEditorState({
     specs: [
@@ -77,13 +70,14 @@ export const Home = (props: IHomeProp) => {
       underline.spec(),
       doc.spec(),
       text.spec(),
-      {...paragraph.spec(),
+      {
+        ...paragraph.spec(),
         schema: {
           ...paragraph.spec().schema,
           attrs: {
-            userId: {  default: account.id },
-            blockId: {default:''}
-          }
+            userId: { default: account.id },
+            blockId: { default: '' },
+          },
         },
       },
       blockquote.spec(),
@@ -95,7 +89,6 @@ export const Home = (props: IHomeProp) => {
       listItem.spec(),
       orderedList.spec(),
       image.spec(),
-
     ],
     plugins: () => [
       bold.plugins(),
@@ -120,44 +113,44 @@ export const Home = (props: IHomeProp) => {
     //TODO create CSV initial value example src/main/resources/config/liquibase/fake-data/*.csv
     //TODO read initial value from database
     initialValue: {
-      "type": "doc",
-      "content": [
+      type: 'doc',
+      content: [
         {
-          "type": "heading",
-          "attrs": {
-            "level": 1,
-            "collapseContent": null
+          type: 'heading',
+          attrs: {
+            level: 1,
+            collapseContent: null,
           },
-          "content": [
+          content: [
             {
-              "type": "text",
-              "text": "Hello world! "
-            }
-          ]
+              type: 'text',
+              text: 'Hello world! ',
+            },
+          ],
         },
         {
-          "type": "paragraph",
-          "attrs": {
-            "nodeId": "abe46c55-2286-459f-923a-d51380eb8362"
+          type: 'paragraph',
+          attrs: {
+            nodeId: 'abe46c55-2286-459f-923a-d51380eb8362',
           },
-          "content": [
+          content: [
             {
-              "type": "text",
-              "text": "los grandes rentistas"
-            }
-          ]
+              type: 'text',
+              text: 'los grandes rentistas',
+            },
+          ],
         },
         {
-          "type": "paragraph",
-          "attrs": {
-            "nodeId": "edf414bd-b199-44fb-899e-98279cad0bd3"
-          }
-        }
-      ]
-    }
+          type: 'paragraph',
+          attrs: {
+            nodeId: 'edf414bd-b199-44fb-899e-98279cad0bd3',
+          },
+        },
+      ],
+    },
   });
 
-  if (!accountLogin) return (<div>no user logged</div>)
+  if (!accountLogin) return <div>no user logged</div>;
 
   return (
     <Row>
@@ -165,37 +158,36 @@ export const Home = (props: IHomeProp) => {
         <div>flowListLen: {flowList.length}</div>
         {/*TODO show flow menu */}
         <BangleEditor state={editorState}>
-          <FloatingMenu menuKey={menuKey}
-                        renderMenuType={({type}) => {
-                          if (type === 'defaultMenu') {
-                            return (
-                              <Menu>
-                                {/*<MenuGroup>*/}
-                                {/*  <BoldButton/>*/}
-                                {/*</MenuGroup>*/}
-                                <MenuGroup>
-                                  <HeadingButton level={1}/>
-                                  <ParagraphButton />
-                                </MenuGroup>
-                              </Menu>
-                            );
-                          }
+          <FloatingMenu
+            menuKey={menuKey}
+            renderMenuType={({ type }) => {
+              if (type === 'defaultMenu') {
+                return (
+                  <Menu>
+                    {/*<MenuGroup>*/}
+                    {/*  <BoldButton/>*/}
+                    {/*</MenuGroup>*/}
+                    <MenuGroup>
+                      <HeadingButton level={1} />
+                      <ParagraphButton />
+                    </MenuGroup>
+                  </Menu>
+                );
+              }
 
-                          return null;
-                        }}
+              return null;
+            }}
           />
         </BangleEditor>
       </Col>
       <Col md="5">
-          <SyntaxHighlighter language="json" style={solarizedlight} showLineNumbers={true}>
-            {JSON.stringify(docState, null, 1)}
-          </SyntaxHighlighter>
-
+        <SyntaxHighlighter language="json" style={solarizedlight} showLineNumbers={true}>
+          {JSON.stringify(docState, null, 1)}
+        </SyntaxHighlighter>
       </Col>
     </Row>
   );
 };
-
 
 const mapStateToProps = storeState => ({
   flowList: storeState.flow.entities,
@@ -208,4 +200,4 @@ const mapDispatchToProps = {
 type StateProps = ReturnType<typeof mapStateToProps>;
 type DispatchProps = typeof mapDispatchToProps;
 
-export default connect(mapStateToProps,mapDispatchToProps)(Home);
+export default connect(mapStateToProps, mapDispatchToProps)(Home);

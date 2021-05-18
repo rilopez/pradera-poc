@@ -149,8 +149,11 @@ public class BlockResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of blocks in body.
      */
     @GetMapping("/blocks")
-    public ResponseEntity<List<Block>> getAllBlocks(BlockCriteria criteria, Pageable pageable) {
-        log.debug("REST request to get Blocks by criteria: {}", criteria);
+    public ResponseEntity<List<Block>> getAllBlocks(BlockCriteria criteria, Pageable pageable, @RequestParam("flowId") Long flowId) {
+        log.debug("REST request to get Blocks by criteria: {}, flowID", criteria, flowId);
+        if (flowId != null && flowId > 0) {
+            return ResponseEntity.ok().body(blockRepository.findByFlowId(flowId));
+        }
         Page<Block> page = blockQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());

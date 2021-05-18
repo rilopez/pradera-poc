@@ -8,6 +8,7 @@ import { IFlow, defaultValue } from 'app/shared/model/flow.model';
 
 export const ACTION_TYPES = {
   FETCH_FLOW_LIST: 'flow/FETCH_FLOW_LIST',
+  FETCH_FLOW_LIST_BY_USER_ID: 'flow/FETCH_FLOW_LIST_BY_USER_ID',
   FETCH_FLOW: 'flow/FETCH_FLOW',
   CREATE_FLOW: 'flow/CREATE_FLOW',
   UPDATE_FLOW: 'flow/UPDATE_FLOW',
@@ -32,6 +33,7 @@ export type FlowState = Readonly<typeof initialState>;
 
 export default (state: FlowState = initialState, action): FlowState => {
   switch (action.type) {
+    case REQUEST(ACTION_TYPES.FETCH_FLOW_LIST_BY_USER_ID):
     case REQUEST(ACTION_TYPES.FETCH_FLOW_LIST):
     case REQUEST(ACTION_TYPES.FETCH_FLOW):
       return {
@@ -50,6 +52,7 @@ export default (state: FlowState = initialState, action): FlowState => {
         updateSuccess: false,
         updating: true,
       };
+    case FAILURE(ACTION_TYPES.FETCH_FLOW_LIST_BY_USER_ID):
     case FAILURE(ACTION_TYPES.FETCH_FLOW_LIST):
     case FAILURE(ACTION_TYPES.FETCH_FLOW):
     case FAILURE(ACTION_TYPES.CREATE_FLOW):
@@ -64,6 +67,7 @@ export default (state: FlowState = initialState, action): FlowState => {
         errorMessage: action.payload,
       };
     case SUCCESS(ACTION_TYPES.FETCH_FLOW_LIST):
+    case SUCCESS(ACTION_TYPES.FETCH_FLOW_LIST_BY_USER_ID):
       return {
         ...state,
         loading: false,
@@ -105,11 +109,19 @@ const apiUrl = 'api/flows';
 
 // Actions
 
+export const getEntitiesByUserId: ICrudGetAllAction<IFlow> = userId => {
+  const requestUrl = `${apiUrl}?userId.equals=${userId}`;
+  return {
+    type: ACTION_TYPES.FETCH_FLOW_LIST_BY_USER_ID,
+    payload: axios.get<IFlow>(`${requestUrl}&cacheBuster=${new Date().getTime()}`),
+  };
+};
+
 export const getEntities: ICrudGetAllAction<IFlow> = (page, size, sort) => {
-  const requestUrl = `${apiUrl}${sort ? `?page=${page}&size=${size}&sort=${sort}` : ''}`;
+  const requestUrl = `${apiUrl}${sort ? `?page=${page}&size=${size}&sort=${sort}` : '?userId.equals=1'}`;
   return {
     type: ACTION_TYPES.FETCH_FLOW_LIST,
-    payload: axios.get<IFlow>(`${requestUrl}${sort ? '&' : '?'}cacheBuster=${new Date().getTime()}`),
+    payload: axios.get<IFlow>(`${requestUrl}&cacheBuster=${new Date().getTime()}`),
   };
 };
 
@@ -120,8 +132,6 @@ export const getEntity: ICrudGetAction<IFlow> = id => {
     payload: axios.get<IFlow>(requestUrl),
   };
 };
-
-//TODO add an action getEntityByUserId
 
 export const createEntity: ICrudPutAction<IFlow> = entity => async dispatch => {
   const result = await dispatch({

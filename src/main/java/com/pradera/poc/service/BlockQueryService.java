@@ -58,6 +58,13 @@ public class BlockQueryService extends QueryService<Block> {
         return blockRepository.findAll(specification, page);
     }
 
+    @Transactional(readOnly = true)
+    public List<Block> findByFlowId(Long flowId) {
+        log.debug("find by flowId : {}", flowId);
+
+        return blockRepository.findByFlowId(flowId);
+    }
+
     /**
      * Return the number of matching entities in the database.
      * @param criteria The object which holds all the filters, which the entities should match.

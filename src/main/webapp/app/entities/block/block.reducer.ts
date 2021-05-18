@@ -8,6 +8,7 @@ import { IBlock, defaultValue } from 'app/shared/model/block.model';
 
 export const ACTION_TYPES = {
   FETCH_BLOCK_LIST: 'block/FETCH_BLOCK_LIST',
+  FETCH_BLOCK_LIST_BY_FLOW_ID: 'block/FETCH_BLOCK_LIST_BY_FLOW_ID',
   FETCH_BLOCK: 'block/FETCH_BLOCK',
   CREATE_BLOCK: 'block/CREATE_BLOCK',
   UPDATE_BLOCK: 'block/UPDATE_BLOCK',
@@ -34,6 +35,7 @@ export type BlockState = Readonly<typeof initialState>;
 export default (state: BlockState = initialState, action): BlockState => {
   switch (action.type) {
     case REQUEST(ACTION_TYPES.FETCH_BLOCK_LIST):
+    case REQUEST(ACTION_TYPES.FETCH_BLOCK_LIST_BY_FLOW_ID):
     case REQUEST(ACTION_TYPES.FETCH_BLOCK):
       return {
         ...state,
@@ -52,6 +54,7 @@ export default (state: BlockState = initialState, action): BlockState => {
         updating: true,
       };
     case FAILURE(ACTION_TYPES.FETCH_BLOCK_LIST):
+    case FAILURE(ACTION_TYPES.FETCH_BLOCK_LIST_BY_FLOW_ID):
     case FAILURE(ACTION_TYPES.FETCH_BLOCK):
     case FAILURE(ACTION_TYPES.CREATE_BLOCK):
     case FAILURE(ACTION_TYPES.UPDATE_BLOCK):
@@ -65,6 +68,7 @@ export default (state: BlockState = initialState, action): BlockState => {
         errorMessage: action.payload,
       };
     case SUCCESS(ACTION_TYPES.FETCH_BLOCK_LIST):
+    case SUCCESS(ACTION_TYPES.FETCH_BLOCK_LIST_BY_FLOW_ID):
       return {
         ...state,
         loading: false,
@@ -116,6 +120,13 @@ export default (state: BlockState = initialState, action): BlockState => {
 const apiUrl = 'api/blocks';
 
 // Actions
+export const getEntitiesByFlowId: ICrudGetAllAction<IBlock> = flowId => {
+  const requestUrl = `${apiUrl}?flowId=${flowId}`;
+  return {
+    type: ACTION_TYPES.FETCH_BLOCK_LIST_BY_FLOW_ID,
+    payload: axios.get<IBlock>(`${requestUrl}&cacheBuster=${new Date().getTime()}`),
+  };
+};
 
 export const getEntities: ICrudGetAllAction<IBlock> = (page, size, sort) => {
   const requestUrl = `${apiUrl}${sort ? `?page=${page}&size=${size}&sort=${sort}` : ''}`;

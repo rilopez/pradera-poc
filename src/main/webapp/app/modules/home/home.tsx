@@ -47,7 +47,7 @@ export const Home = (props: IHomeProp) => {
         <div>flowListLen: {flowList.length}</div>
         <div>blockListLen: {blockList.length}</div>
 
-        <Editor blockList={blockList}></Editor>
+        <Editor blockList={blockList} userId={accountLogin.userId}></Editor>
       </Col>
       <Col md="5">
         <SyntaxHighlighter language="json" style={solarizedlight} showLineNumbers={true}>

@@ -149,7 +149,11 @@ public class BlockResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of blocks in body.
      */
     @GetMapping("/blocks")
-    public ResponseEntity<List<Block>> getAllBlocks(BlockCriteria criteria, Pageable pageable, @RequestParam("flowId") Long flowId) {
+    public ResponseEntity<List<Block>> getAllBlocks(
+        BlockCriteria criteria,
+        Pageable pageable,
+        @RequestParam(value = "flowId", required = false) Long flowId
+    ) {
         log.debug("REST request to get Blocks by criteria: {}, flowID", criteria, flowId);
         if (flowId != null && flowId > 0) {
             return ResponseEntity.ok().body(blockRepository.findByFlowId(flowId));

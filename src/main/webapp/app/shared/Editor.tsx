@@ -26,9 +26,10 @@ const menuKey = new PluginKey('menuKey');
 
 export interface IEditor {
   blockList: ReadonlyArray<IBlock>;
+  userId: string;
 }
 
-export const Editor = ({ blockList }: IEditor) => {
+export const Editor = ({ blockList, userId }: IEditor) => {
   if (!blockList || blockList.length === 0) {
     return null;
   }
@@ -59,7 +60,7 @@ export const Editor = ({ blockList }: IEditor) => {
         schema: {
           ...paragraph.spec().schema,
           attrs: {
-            userId: { default: '' },
+            userId: { default: userId },
             blockId: { default: '' },
           },
         },

@@ -141,6 +141,12 @@ public class FlowResource {
         );
     }
 
+    @GetMapping("/flows/by-user-id/{userId}")
+    public ResponseEntity<List<Flow>> getFlowsBy(@PathVariable(value = "userId", required = true) Long userId) {
+        log.debug("REST request to get Flows by userId: {}", userId);
+        return ResponseEntity.ok().body(flowQueryService.findByUserId(userId));
+    }
+
     /**
      * {@code GET  /flows} : get all the flows.
      *
@@ -149,7 +155,15 @@ public class FlowResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of flows in body.
      */
     @GetMapping("/flows")
-    public ResponseEntity<List<Flow>> getAllFlows(FlowCriteria criteria, Pageable pageable) {
+    public ResponseEntity<List<Flow>> getAllFlows(
+        FlowCriteria criteria,
+        Pageable pageable,
+        @RequestParam(value = "userId", required = false) Long userId
+    ) {
+        if (userId != null && userId > 0) {
+            return ResponseEntity.ok().body(flowQueryService.findByUserId(userId));
+        }
+
         log.debug("REST request to get Flows by criteria: {}", criteria);
         Page<Flow> page = flowQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);

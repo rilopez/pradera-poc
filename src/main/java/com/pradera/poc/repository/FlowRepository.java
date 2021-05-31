@@ -13,4 +13,6 @@ import org.springframework.stereotype.Repository;
 public interface FlowRepository extends JpaRepository<Flow, Long>, JpaSpecificationExecutor<Flow> {
     @Query("select flow from Flow flow where flow.user.login = ?#{principal.username}")
     List<Flow> findByUserIsCurrentUser();
+
+    List<Flow> findByUserId(Long userId);
 }

@@ -101,4 +101,9 @@ public class FlowQueryService extends QueryService<Flow> {
         }
         return specification;
     }
+
+    public List<Flow> findByUserId(Long userId) {
+        log.debug("find by userId : {}", userId);
+        return flowRepository.findByUserId(userId);
+    }
 }

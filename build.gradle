@@ -139,22 +139,22 @@ project.ext.diffChangelogFile = "src/main/resources/config/liquibase/changelog/"
 liquibase {
     activities {
         main {
-            driver "org.h2.Driver"
-            url "jdbc:h2:file:./build/h2db/db/pradera"
-            username "pradera"
-            password ""
+            driver "org.postgresql.Driver"
+            url "jdbc:postgresql://localhost:5432/pradera"
+            username "postgres"
+            password "secret"
             changeLogFile "src/main/resources/config/liquibase/master.xml"
             defaultSchemaName ""
             logLevel "debug"
             classpath "src/main/resources/"
         }
         diffLog {
-            driver "org.h2.Driver"
-            url "jdbc:h2:file:./build/h2db/db/pradera"
-            username "pradera"
-            password ""
+            driver "org.postgresql.Driver"
+            url "jdbc:postgresql://localhost:5432/pradera"
+            username "postgres"
+            password "secret"
             changeLogFile project.ext.diffChangelogFile
-            referenceUrl "hibernate:spring:com.pradera.poc.domain?dialect=org.hibernate.dialect.H2Dialect&hibernate.physical_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy"
+            referenceUrl "hibernate:spring:com.pradera.poc.domain?dialect=org.hibernate.dialect.PostgreSQL9Dialect&hibernate.physical_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy"
             defaultSchemaName ""
             logLevel "debug"
             classpath "$buildDir/classes/java/main"

@@ -110,10 +110,10 @@ const apiUrl = 'api/flows';
 // Actions
 
 export const getEntitiesByUserId: ICrudGetAllAction<IFlow> = userId => {
-  const requestUrl = `${apiUrl}?userId.equals=${userId}`;
+  const requestUrl = `${apiUrl}/by-user-id/${userId}`;
   return {
     type: ACTION_TYPES.FETCH_FLOW_LIST_BY_USER_ID,
-    payload: axios.get<IFlow>(`${requestUrl}&cacheBuster=${new Date().getTime()}`),
+    payload: axios.get<IFlow>(`${requestUrl}?cacheBuster=${new Date().getTime()}`),
   };
 };
 

@@ -61,7 +61,6 @@ public class BlockQueryService extends QueryService<Block> {
     @Transactional(readOnly = true)
     public List<Block> findByFlowId(Long flowId) {
         log.debug("find by flowId : {}", flowId);
-
         return blockRepository.findByFlowId(flowId);
     }
 

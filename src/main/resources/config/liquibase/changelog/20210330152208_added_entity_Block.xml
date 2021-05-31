@@ -54,7 +54,7 @@
                   tableName="block">
             <column name="id" type="numeric"/>
             <column name="type" type="string"/>
-            <column name="content" type="clob"/>
+            <column name="content" type="string"/>
             <column name="created_date" type="${datetimeType}"/>
             <column name="hash" type="string"/>
             <column name="user_id" type="numeric"/>

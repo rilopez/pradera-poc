@@ -154,9 +154,9 @@ public class BlockResource {
         Pageable pageable,
         @RequestParam(value = "flowId", required = false) Long flowId
     ) {
-        log.debug("REST request to get Blocks by criteria: {}, flowID", criteria, flowId);
+        log.debug("REST request to get Blocks by criteria: {}, flowID: {}", criteria, flowId);
         if (flowId != null && flowId > 0) {
-            return ResponseEntity.ok().body(blockRepository.findByFlowId(flowId));
+            return ResponseEntity.ok().body(blockQueryService.findByFlowId(flowId));
         }
         Page<Block> page = blockQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);

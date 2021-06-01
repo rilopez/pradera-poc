@@ -27,9 +27,10 @@ const menuKey = new PluginKey('menuKey');
 export interface IEditor {
   blockList: ReadonlyArray<IBlock>;
   userId: string;
+  onChange: (documentState: any) => void;
 }
 
-export const Editor = ({ blockList, userId }: IEditor) => {
+export const Editor = ({ blockList, userId, onChange }: IEditor) => {
   if (!blockList || blockList.length === 0) {
     return null;
   }
@@ -40,9 +41,7 @@ export const Editor = ({ blockList, userId }: IEditor) => {
     view: () => ({
       update(view, prevState) {
         if (!view.state.doc.eq(prevState.doc)) {
-          //TODO send state to database
-          // eslint-disable-next-line no-console
-          console.log(view.state.doc.toJSON());
+          onChange(view.state.doc);
         }
       },
     }),
@@ -69,7 +68,17 @@ export const Editor = ({ blockList, userId }: IEditor) => {
       bulletList.spec(),
       codeBlock.spec(),
       hardBreak.spec(),
-      heading.spec(),
+      {
+        ...heading.spec(),
+        schema: {
+          ...heading.spec().schema,
+          attrs: {
+            ...heading.spec().schema.attrs,
+            userId: { default: userId },
+            blockId: { default: '' },
+          },
+        },
+      },
       horizontalRule.spec(),
       listItem.spec(),
       orderedList.spec(),

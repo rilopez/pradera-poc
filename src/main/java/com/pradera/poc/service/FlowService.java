@@ -1,6 +1,10 @@
 package com.pradera.poc.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pradera.poc.domain.Flow;
+import com.pradera.poc.repository.FlowBlockRepository;
 import com.pradera.poc.repository.FlowRepository;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -20,9 +24,11 @@ public class FlowService {
     private final Logger log = LoggerFactory.getLogger(FlowService.class);
 
     private final FlowRepository flowRepository;
+    private final FlowBlockRepository flowBlockRepository;
 
-    public FlowService(FlowRepository flowRepository) {
+    public FlowService(FlowRepository flowRepository, FlowBlockRepository flowBlockRepository) {
         this.flowRepository = flowRepository;
+        this.flowBlockRepository = flowBlockRepository;
     }
 
     /**
@@ -81,6 +87,36 @@ public class FlowService {
     public Optional<Flow> findOne(Long id) {
         log.debug("Request to get Flow : {}", id);
         return flowRepository.findById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Flow> updateDocState(Long id, String docStateJson) throws JsonProcessingException {
+        log.debug("updateDocState: {}, {}", id, docStateJson);
+
+        flowBlockRepository.deleteByFlowId(id);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        JsonNode jsonNode = objectMapper.readTree(docStateJson);
+        JsonNode content = jsonNode.get("content");
+        content.forEach(
+            contentItem -> {
+                log.debug("item: {}", contentItem);
+                JsonNode attrs = contentItem.get("attrs");
+                JsonNode blockIdNode = attrs.get("blockId");
+                if (blockIdNode != null) {
+                    if (blockIdNode.isLong()) {
+                        long blockId = blockIdNode.asLong();
+                        //TODO did  the node changed? if so create a new one based in the last one
+                    }
+                } else {
+                    //TODO new node, create a fresh block
+                }
+                //TODO  if block created attach to flow
+            }
+        );
+
+        return findOne(id);
     }
 
     /**

@@ -1,5 +1,8 @@
 package com.pradera.poc.web.rest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pradera.poc.domain.Flow;
 import com.pradera.poc.repository.FlowRepository;
 import com.pradera.poc.service.FlowQueryService;
@@ -8,6 +11,7 @@ import com.pradera.poc.service.criteria.FlowCriteria;
 import com.pradera.poc.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -21,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -51,6 +56,29 @@ public class FlowResource {
         this.flowService = flowService;
         this.flowRepository = flowRepository;
         this.flowQueryService = flowQueryService;
+    }
+
+    /**
+     * {@code PUT  /flows/upload-document-state/{id}} : Updates document state
+     *
+     * @param id the flow to update state.
+     * @return the {@link ResponseEntity} with status {@code 200 } and with body the updated flow, or with status {@code 400 (Bad Request)} if found errors.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PutMapping("/flows/upload-document-state/{id}")
+    public ResponseEntity<Flow> uploadDocumentState(
+        @PathVariable(value = "id", required = false) final Long id,
+        @Valid @RequestBody String json
+    ) throws URISyntaxException, JsonProcessingException {
+        log.debug("REST request to update Flow  document state : {}, {}", id, json);
+        if (id == null) {
+            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+        }
+        if (!flowRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+
+        return ResponseUtil.wrapOrNotFound(flow);
     }
 
     /**

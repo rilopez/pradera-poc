@@ -10,4 +10,9 @@ export interface IFlow {
   blocks?: IFlowBlock[] | null;
 }
 
+export interface IFlowDocumentState {
+  id?: number;
+  docState?: any;
+}
+
 export const defaultValue: Readonly<IFlow> = {};

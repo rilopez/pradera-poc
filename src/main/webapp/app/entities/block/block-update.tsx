@@ -22,8 +22,6 @@ export const BlockUpdate = (props: IBlockUpdateProps) => {
 
   const { blockEntity, blocks, users, loading, updating } = props;
 
-  const { content } = blockEntity;
-
   const handleClose = () => {
     props.history.push('/block' + props.location.search);
   };

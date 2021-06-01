@@ -4,7 +4,7 @@ import { ICrudGetAction, ICrudGetAllAction, ICrudPutAction, ICrudDeleteAction } 
 import { cleanEntity } from 'app/shared/util/entity-utils';
 import { REQUEST, SUCCESS, FAILURE } from 'app/shared/reducers/action-type.util';
 
-import { IFlow, defaultValue } from 'app/shared/model/flow.model';
+import { IFlow, defaultValue, IFlowDocumentState } from 'app/shared/model/flow.model';
 
 export const ACTION_TYPES = {
   FETCH_FLOW_LIST: 'flow/FETCH_FLOW_LIST',
@@ -13,6 +13,7 @@ export const ACTION_TYPES = {
   CREATE_FLOW: 'flow/CREATE_FLOW',
   UPDATE_FLOW: 'flow/UPDATE_FLOW',
   PARTIAL_UPDATE_FLOW: 'flow/PARTIAL_UPDATE_FLOW',
+  UPLOAD_FLOW_DOCUMENT_STATE: 'flow/UPLOAD_FLOW_DOCUMENT_STATE',
   DELETE_FLOW: 'flow/DELETE_FLOW',
   RESET: 'flow/RESET',
 };
@@ -44,6 +45,7 @@ export default (state: FlowState = initialState, action): FlowState => {
       };
     case REQUEST(ACTION_TYPES.CREATE_FLOW):
     case REQUEST(ACTION_TYPES.UPDATE_FLOW):
+    case REQUEST(ACTION_TYPES.UPLOAD_FLOW_DOCUMENT_STATE):
     case REQUEST(ACTION_TYPES.DELETE_FLOW):
     case REQUEST(ACTION_TYPES.PARTIAL_UPDATE_FLOW):
       return {
@@ -57,6 +59,7 @@ export default (state: FlowState = initialState, action): FlowState => {
     case FAILURE(ACTION_TYPES.FETCH_FLOW):
     case FAILURE(ACTION_TYPES.CREATE_FLOW):
     case FAILURE(ACTION_TYPES.UPDATE_FLOW):
+    case FAILURE(ACTION_TYPES.UPLOAD_FLOW_DOCUMENT_STATE):
     case FAILURE(ACTION_TYPES.PARTIAL_UPDATE_FLOW):
     case FAILURE(ACTION_TYPES.DELETE_FLOW):
       return {
@@ -82,6 +85,7 @@ export default (state: FlowState = initialState, action): FlowState => {
       };
     case SUCCESS(ACTION_TYPES.CREATE_FLOW):
     case SUCCESS(ACTION_TYPES.UPDATE_FLOW):
+    case SUCCESS(ACTION_TYPES.UPLOAD_FLOW_DOCUMENT_STATE):
     case SUCCESS(ACTION_TYPES.PARTIAL_UPDATE_FLOW):
       return {
         ...state,
@@ -154,6 +158,15 @@ export const partialUpdate: ICrudPutAction<IFlow> = entity => async dispatch => 
   const result = await dispatch({
     type: ACTION_TYPES.PARTIAL_UPDATE_FLOW,
     payload: axios.patch(`${apiUrl}/${entity.id}`, cleanEntity(entity)),
+  });
+  return result;
+};
+
+export const uploadDocumentState: ICrudPutAction<IFlowDocumentState> = flowDocumentState => async dispatch => {
+  console.log('inside uploadDocumentState');
+  const result = await dispatch({
+    type: ACTION_TYPES.UPLOAD_FLOW_DOCUMENT_STATE,
+    payload: axios.put(`${apiUrl}/upload-document-state/${flowDocumentState.id}`, flowDocumentState.docState),
   });
   return result;
 };

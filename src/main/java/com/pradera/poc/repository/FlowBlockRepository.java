@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface FlowBlockRepository extends JpaRepository<FlowBlock, Long>, JpaSpecificationExecutor<FlowBlock> {}
+public interface FlowBlockRepository extends JpaRepository<FlowBlock, Long>, JpaSpecificationExecutor<FlowBlock> {
+    long deleteByFlowId(Long id);
+}

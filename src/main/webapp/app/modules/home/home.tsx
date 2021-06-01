@@ -20,10 +20,12 @@ export interface IHomeProp extends StateProps, DispatchProps {}
 export const Home = (props: IHomeProp) => {
   const { account, flowList, blockList } = props;
   const [docState, setDocState] = useState(null);
-
+  const accountLogin = account.login;
   useEffect(() => {
-    props.getFlowsByUserId(1);
-  }, []);
+    if (accountLogin) {
+      props.getFlowsByUserId(account.id);
+    }
+  }, [accountLogin]);
 
   useEffect(() => {
     if (flowList.length) {
@@ -37,16 +39,11 @@ export const Home = (props: IHomeProp) => {
     }
   }, [blockList]);
 
-  const accountLogin = account.login;
-
   if (!accountLogin) return <div>no user logged</div>;
 
   return (
     <Row>
       <Col md="7" className="pad">
-        <div>flowListLen: {flowList.length}</div>
-        <div>blockListLen: {blockList.length}</div>
-
         <Editor blockList={blockList} userId={accountLogin.userId}></Editor>
       </Col>
       <Col md="5">

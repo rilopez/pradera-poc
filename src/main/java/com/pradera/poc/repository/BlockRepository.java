@@ -19,7 +19,7 @@ public interface BlockRepository extends JpaRepository<Block, Long>, JpaSpecific
         "select block " +
         "from Block block " +
         "inner join FlowBlock flowblock on block.id = flowblock.block.id " +
-        " where flowblock.flow.id = :flowId"
+        " where flowblock.flow.id = :flowId order by flowblock.blockOrder"
     )
     List<Block> findByFlowId(@Param("flowId") Long flowId);
 }

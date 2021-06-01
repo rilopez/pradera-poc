@@ -34,6 +34,8 @@ public class FlowBlock implements Serializable {
     @JsonIgnoreProperties(value = { "parent", "user", "parentBlocks", "flows" }, allowSetters = true)
     private Block block;
 
+    public FlowBlock() {}
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
     public Long getId() {
         return id;
@@ -113,5 +115,48 @@ public class FlowBlock implements Serializable {
             "id=" + getId() +
             ", blockOrder=" + getBlockOrder() +
             "}";
+    }
+
+    public static final class Builder {
+
+        private Long id;
+        private Long blockOrder;
+        private Flow flow;
+        private Block block;
+
+        private Builder() {}
+
+        public static Builder aFlowBlock() {
+            return new Builder();
+        }
+
+        public Builder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder blockOrder(Long blockOrder) {
+            this.blockOrder = blockOrder;
+            return this;
+        }
+
+        public Builder flow(Flow flow) {
+            this.flow = flow;
+            return this;
+        }
+
+        public Builder block(Block block) {
+            this.block = block;
+            return this;
+        }
+
+        public FlowBlock build() {
+            FlowBlock flowBlock = new FlowBlock();
+            flowBlock.setId(id);
+            flowBlock.setBlockOrder(blockOrder);
+            flowBlock.setFlow(flow);
+            flowBlock.setBlock(block);
+            return flowBlock;
+        }
     }
 }

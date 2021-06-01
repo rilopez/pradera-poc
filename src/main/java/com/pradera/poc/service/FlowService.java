@@ -2,11 +2,21 @@ package com.pradera.poc.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pradera.poc.domain.Block;
 import com.pradera.poc.domain.Flow;
+import com.pradera.poc.domain.FlowBlock;
+import com.pradera.poc.domain.User;
+import com.pradera.poc.domain.enumeration.BlockType;
+import com.pradera.poc.repository.BlockRepository;
 import com.pradera.poc.repository.FlowBlockRepository;
 import com.pradera.poc.repository.FlowRepository;
+import com.pradera.poc.repository.UserRepository;
+import java.time.ZonedDateTime;
+import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -24,11 +34,20 @@ public class FlowService {
     private final Logger log = LoggerFactory.getLogger(FlowService.class);
 
     private final FlowRepository flowRepository;
+    private final BlockRepository blockRepository;
     private final FlowBlockRepository flowBlockRepository;
+    private final UserRepository userRepository;
 
-    public FlowService(FlowRepository flowRepository, FlowBlockRepository flowBlockRepository) {
+    public FlowService(
+        FlowRepository flowRepository,
+        BlockRepository blockRepository,
+        FlowBlockRepository flowBlockRepository,
+        UserRepository userRepository
+    ) {
         this.flowRepository = flowRepository;
+        this.blockRepository = blockRepository;
         this.flowBlockRepository = flowBlockRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -89,33 +108,77 @@ public class FlowService {
         return flowRepository.findById(id);
     }
 
-    @Transactional(readOnly = true)
-    public Optional<Flow> updateDocState(Long id, String docStateJson) throws JsonProcessingException {
+    @Transactional
+    public Optional<Flow> updateDocState(String currentUser, Long id, JsonNode docStateJson) throws JsonProcessingException {
         log.debug("updateDocState: {}, {}", id, docStateJson);
 
+        User user = userRepository.findOneByLogin(currentUser).orElseThrow();
+
+        //TODO load all nodes in flow
+        Map<Long, Block> blocksInFlow = blockRepository.findByFlowId(id).stream().collect(Collectors.toMap(Block::getId, block -> block));
+        //delete existing flow
         flowBlockRepository.deleteByFlowId(id);
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        Flow flow = findOne(id).orElseThrow();
+        flow.blocks(new LinkedHashSet<>());
+        if (!flow.getBlocks().isEmpty()) {
+            throw new RuntimeException("flow must not have any blocks at this point");
+        }
+        JsonNode content = docStateJson.get("content");
+        long order = 1;
+        for (JsonNode contentItem : content) {
+            log.debug("item: {}", contentItem);
+            JsonNode attrs = contentItem.get("attrs");
+            JsonNode blockIdNode = attrs.get("blockId");
+            String nodeType = contentItem.get("type").asText();
 
-        JsonNode jsonNode = objectMapper.readTree(docStateJson);
-        JsonNode content = jsonNode.get("content");
-        content.forEach(
-            contentItem -> {
-                log.debug("item: {}", contentItem);
-                JsonNode attrs = contentItem.get("attrs");
-                JsonNode blockIdNode = attrs.get("blockId");
-                if (blockIdNode != null) {
-                    if (blockIdNode.isLong()) {
-                        long blockId = blockIdNode.asLong();
-                        //TODO did  the node changed? if so create a new one based in the last one
-                    }
-                } else {
-                    //TODO new node, create a fresh block
+            JsonNode itemContent = contentItem.get("content");
+            String nodeText = itemContent.get(0).get("text").asText();
+            Block currentBlock;
+            if (blockIdNode != null) {
+                long blockId = blockIdNode.asLong();
+                if (!blocksInFlow.containsKey(blockId)) {
+                    throw new RuntimeException("Block with ID " + blockId + " not found in flow with ID " + id);
                 }
-                //TODO  if block created attach to flow
-            }
-        );
+                Block existingBlock = blocksInFlow.get(blockId);
 
+                currentBlock = existingBlock;
+                //did  the node changed? if so create a new one based in the last one
+                if (
+                    !StringUtils.equals(existingBlock.getContent(), nodeText) ||
+                    !StringUtils.equals(nodeType, existingBlock.getType().toEditorType())
+                ) {
+                    Block newBlock = Block.Builder
+                        .aBlock()
+                        .type(BlockType.fromString(nodeType))
+                        .content(nodeText)
+                        .parent(existingBlock)
+                        .user(user)
+                        .hash("seudohash")
+                        .createdDate(ZonedDateTime.now())
+                        .build();
+                    //  if block created attach to flow
+                    blockRepository.save(newBlock);
+                    currentBlock = newBlock;
+                }
+            } else {
+                Block newBlock = Block.Builder
+                    .aBlock()
+                    .type(BlockType.fromString(nodeType))
+                    .content(nodeText)
+                    .user(user)
+                    .createdDate(ZonedDateTime.now())
+                    .hash("seudohash")
+                    .build();
+                blockRepository.save(newBlock);
+                currentBlock = newBlock;
+            }
+
+            FlowBlock flowBlock = FlowBlock.Builder.aFlowBlock().block(currentBlock).flow(flow).blockOrder(order).build();
+            flowBlockRepository.save(flowBlock);
+
+            order++;
+        }
         return findOne(id);
     }
 

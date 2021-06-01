@@ -163,7 +163,6 @@ export const partialUpdate: ICrudPutAction<IFlow> = entity => async dispatch => 
 };
 
 export const uploadDocumentState: ICrudPutAction<IFlowDocumentState> = flowDocumentState => async dispatch => {
-  console.log('inside uploadDocumentState');
   const result = await dispatch({
     type: ACTION_TYPES.UPLOAD_FLOW_DOCUMENT_STATE,
     payload: axios.put(`${apiUrl}/upload-document-state/${flowDocumentState.id}`, flowDocumentState.docState),

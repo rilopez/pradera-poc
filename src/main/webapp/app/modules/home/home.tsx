@@ -21,7 +21,6 @@ export const Home = (props: IHomeProp) => {
   const { account, flowList, blockList } = props;
   const [docState, setDocState] = useState(null);
   const [currentFlow, setCurrentFlow] = useState(null);
-
   const accountLogin = account.login;
 
   useEffect(() => {
@@ -37,7 +36,7 @@ export const Home = (props: IHomeProp) => {
   }, [flowList]);
 
   useEffect(() => {
-    if (currentFlow) {
+    if (currentFlow && currentFlow.id) {
       props.getBlocksByFlowId(currentFlow.id);
     }
   }, [currentFlow]);
@@ -48,12 +47,21 @@ export const Home = (props: IHomeProp) => {
     }
   }, [blockList]);
 
+  useEffect(() => {
+    if (props.flowEntity) {
+      setCurrentFlow(props.flowEntity);
+    }
+  }, [props.flowEntity]);
+
   if (!accountLogin) return <div>no user logged</div>;
 
   function onChangeDocState(documentState: any): void {
-    console.log('trying to send data to flow id', currentFlow.id);
     setDocState(documentState);
-    props.uploadDocumentState({ id: currentFlow.id, docState: documentState });
+    if (flowList.length) {
+      props.uploadDocumentState({ id: flowList[0].id, docState: documentState });
+      //FIXME raise condition after updating state. change text, state gets updated,
+      // after second change we get an invalid request error, because editor contains an old doc state
+    }
   }
 
   return (
@@ -73,6 +81,7 @@ export const Home = (props: IHomeProp) => {
 const mapStateToProps = storeState => {
   return {
     flowList: storeState.flow.entities,
+    flowEntity: storeState.flow.entity,
     blockList: storeState.block.entities,
     account: storeState.authentication.account,
     isAuthenticated: storeState.authentication.isAuthenticated,

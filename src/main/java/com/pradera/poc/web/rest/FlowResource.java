@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pradera.poc.domain.Flow;
 import com.pradera.poc.repository.FlowRepository;
+import com.pradera.poc.security.SecurityUtils;
 import com.pradera.poc.service.FlowQueryService;
 import com.pradera.poc.service.FlowService;
 import com.pradera.poc.service.criteria.FlowCriteria;
@@ -78,6 +79,12 @@ public class FlowResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode docStateJson = objectMapper.readTree(json);
+
+        String currentUser = SecurityUtils.getCurrentUserLogin().orElseThrow();
+
+        Optional<Flow> flow = flowService.updateDocState(currentUser, id, docStateJson);
         return ResponseUtil.wrapOrNotFound(flow);
     }
 

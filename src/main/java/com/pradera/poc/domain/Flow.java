@@ -1,6 +1,7 @@
 package com.pradera.poc.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.pradera.poc.domain.enumeration.BlockType;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -39,6 +40,8 @@ public class Flow implements Serializable {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "flow", "block" }, allowSetters = true)
     private Set<FlowBlock> blocks = new HashSet<>();
+
+    public Flow() {}
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
     public Long getId() {
@@ -102,8 +105,16 @@ public class Flow implements Serializable {
         return this;
     }
 
+    public Flow addBlocks(Block block) {
+        FlowBlock flowBlock = FlowBlock.Builder.aFlowBlock().block(block).build();
+
+        this.addBlocks(flowBlock);
+        return this;
+    }
+
     public Flow addBlocks(FlowBlock flowBlock) {
         this.blocks.add(flowBlock);
+        flowBlock.setBlockOrder(Long.valueOf(this.blocks.size()));
         flowBlock.setFlow(this);
         return this;
     }
@@ -144,11 +155,70 @@ public class Flow implements Serializable {
     }
 
     // prettier-ignore
+
     @Override
     public String toString() {
-        return "Flow{" +
-            "id=" + getId() +
-            ", name='" + getName() + "'" +
-            "}";
+
+        StringBuilder sb = new StringBuilder();
+        getBlocks().forEach(flowBlock -> {
+            Block block = flowBlock.getBlock();
+            if (block.getType() == BlockType.TITLE) {
+                sb.append("# ");
+            }
+            sb.append(block.getContent()).append("\n");
+        });
+
+
+        return sb.toString();
+    }
+
+    public static final class Builder {
+
+        private Long id;
+        private String name;
+        private User user;
+        private Book book;
+        private Set<FlowBlock> blocks = new HashSet<>();
+
+        private Builder() {}
+
+        public static Builder aFlow() {
+            return new Builder();
+        }
+
+        public Builder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder user(User user) {
+            this.user = user;
+            return this;
+        }
+
+        public Builder book(Book book) {
+            this.book = book;
+            return this;
+        }
+
+        public Builder blocks(Set<FlowBlock> blocks) {
+            this.blocks = blocks;
+            return this;
+        }
+
+        public Flow build() {
+            Flow flow = new Flow();
+            flow.setId(id);
+            flow.setName(name);
+            flow.setUser(user);
+            flow.setBook(book);
+            flow.setBlocks(blocks);
+            return flow;
+        }
     }
 }

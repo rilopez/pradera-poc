@@ -63,8 +63,6 @@ public class Block implements Serializable {
     @JsonIgnoreProperties(value = { "flow", "block" }, allowSetters = true)
     private Set<FlowBlock> flows = new HashSet<>();
 
-    public Block() {}
-
     // jhipster-needle-entity-add-field - JHipster will add fields here
     public Long getId() {
         return id;
@@ -248,83 +246,5 @@ public class Block implements Serializable {
             ", createdDate='" + getCreatedDate() + "'" +
             ", hash='" + getHash() + "'" +
             "}";
-    }
-
-    public static final class Builder {
-
-        private Long id;
-        private BlockType type;
-        private String content;
-        private ZonedDateTime createdDate;
-        private String hash;
-        private Block parent;
-        private User user;
-        private Set<Block> parentBlocks = new HashSet<>();
-        private Set<FlowBlock> flows = new HashSet<>();
-
-        private Builder() {}
-
-        public static Builder aBlock() {
-            return new Builder();
-        }
-
-        public Builder id(Long id) {
-            this.id = id;
-            return this;
-        }
-
-        public Builder type(BlockType type) {
-            this.type = type;
-            return this;
-        }
-
-        public Builder content(String content) {
-            this.content = content;
-            return this;
-        }
-
-        public Builder createdDate(ZonedDateTime createdDate) {
-            this.createdDate = createdDate;
-            return this;
-        }
-
-        public Builder hash(String hash) {
-            this.hash = hash;
-            return this;
-        }
-
-        public Builder parent(Block parent) {
-            this.parent = parent;
-            return this;
-        }
-
-        public Builder user(User user) {
-            this.user = user;
-            return this;
-        }
-
-        public Builder parentBlocks(Set<Block> parentBlocks) {
-            this.parentBlocks = parentBlocks;
-            return this;
-        }
-
-        public Builder flows(Set<FlowBlock> flows) {
-            this.flows = flows;
-            return this;
-        }
-
-        public Block build() {
-            Block block = new Block();
-            block.setId(id);
-            block.setType(type);
-            block.setContent(content);
-            block.setCreatedDate(createdDate);
-            block.setHash(hash);
-            block.setParent(parent);
-            block.setUser(user);
-            block.setParentBlocks(parentBlocks);
-            block.setFlows(flows);
-            return block;
-        }
     }
 }
